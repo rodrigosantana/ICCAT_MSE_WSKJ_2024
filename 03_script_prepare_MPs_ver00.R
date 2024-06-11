@@ -228,16 +228,17 @@ SCA_00 <- make_MP(SCA,
 ######@> linearly reduces F - harvest control rule
 ######@> based on:
 ######@> https://www.iccat.int/Documents/Recs/compendiopdf-e/2017-04-e.pdf...
-SCA_01 <- function(x, Data, Interval = 3, tunepar = 1, ...) {
+SCA_01 <- function(x, Data, Interval = 3, tunepar = 1.2, ...) {
     Rec <- new('Rec')
     ## apply SP assessment model
-    Mod <- SAMtool::SCA(x, Data)
+    Mod <- SAMtool::SCA(x, Data, SR = "BH", vulneability = "dome",
+        CAA_dist = "lognormal")
     ## harvest control rule
     ## based on: https://www.iccat.int/Documents/Recs/compendiopdf-e/2017-04-e.pdf
-    Bthresh <- Mod@SSBMSY
+    Bthresh <- Mod@BMSY
     Blim <- 0.4 * Bthresh
-    Ftar <- 0.8 * tunepar * Mod@FMSY
-    Fmin <- 0.1 * tunepar * Mod@FMSY
+    Ftar <- tunepar * 0.1
+    Fmin <- 0.1 * Ftar
     Bcurr <- Mod@B[length(Mod@B)]
     if (Bcurr>=Bthresh) {
         Fmort <- Ftar
@@ -256,16 +257,17 @@ class(SCA_01) <- 'MP'
 ######@> linearly reduces F - harvest control rule
 ######@> based on:
 ######@> https://www.iccat.int/Documents/Recs/compendiopdf-e/2017-04-e.pdf...
-SCA_02 <- function(x, Data, Interval = 3, tunepar = 1, ...) {
+SCA_02 <- function(x, Data, Interval = 3, tunepar = 1.2, ...) {
     Rec <- new('Rec')
     ## apply SP assessment model
-    Mod <- SAMtool::SCA(x, Data)
+    Mod <- SAMtool::SCA(x, Data, SR = "BH", vulneability = "dome",
+        CAA_dist = "lognormal")
     ## harvest control rule
     ## based on: https://www.iccat.int/Documents/Recs/compendiopdf-e/2017-04-e.pdf
     Bthresh <- Mod@BMSY
     Blim <- 0.4 * Bthresh
-    Ftar <- 1 * tunepar * Mod@FMSY
-    Fmin <- 0.1 * tunepar * Mod@FMSY
+    Ftar <- tunepar * 0.1
+    Fmin <- 0.1 * Ftar
     Bcurr <- Mod@B[length(Mod@B)]
     if (Bcurr>=Bthresh) {
         Fmort <- Ftar
@@ -284,7 +286,7 @@ class(SCA_02) <- 'MP'
 ######@> linearly reduces F (Schaeffer model) - harvest control rule
 ######@> based on: [with TAC fixed first year]
 ######@> https://www.iccat.int/Documents/Recs/compendiopdf-e/2017-04-e.pdf...
-SP_01 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 0.38, ...) {
+SP_01 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 1.27, ...) {
     Rec <- new('Rec')
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
@@ -299,13 +301,15 @@ SP_01 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 0.38, ...) {
     Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
     ## apply SP assessment model
     Mod <- SAMtool::SP(x, Data, prior = list(r = c(0.416, 0.148),
-        MSY = c(33000, 0.2)), start = list(dep = 0.98, n = 1))
+        MSY = c(30000, 0.2)), start = list(dep = 0.98, n = 1))
     ## harvest control rule
     ## based on: https://www.iccat.int/Documents/Recs/compendiopdf-e/2017-04-e.pdf
     Bthresh <- Mod@BMSY
     Blim <- 0.4 * Bthresh
-    Ftar <- 0.8 * tunepar * Mod@FMSY
-    Fmin <- 0.1 * tunepar * Mod@FMSY
+    ## Ftar <- 0.8 * tunepar * Mod@FMSY
+    ## Fmin <- 0.1 * tunepar * Mod@FMSY
+    Ftar <- tunepar * 0.10
+    Fmin <- 0.1 * Ftar
     Bcurr <- Mod@B[length(Mod@B)]
     if (Bcurr>=Bthresh) {
         Fmort <- Ftar
@@ -324,7 +328,7 @@ class(SP_01) <- 'MP'
 ######Rule that linearly reduces F (Schaeffer model) - harvest control
 ######rule based on:
 ######@> https://www.iccat.int/Documents/Recs/compendiopdf-e/2017-04-e.pdf...
-SP_02 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 0.38, ...) {
+SP_02 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 1.22, ...) {
     Rec <- new('Rec')
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
@@ -339,14 +343,16 @@ SP_02 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 0.38, ...) {
     Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
     ## apply SP assessment model
     Mod <- SAMtool::SP_SS(x, Data, prior = list(r = c(0.416, 0.148),
-        MSY = c(33000, 0.2)), start = list(dep = 0.98, n = 1),
+        MSY = c(30000, 0.2)), start = list(dep = 0.98, n = 1),
         fix_sigma = FALSE, fix_tau = TRUE)
     ## harvest control rule
     ## based on: https://www.iccat.int/Documents/Recs/compendiopdf-e/2017-04-e.pdf
     Bthresh <- Mod@BMSY
     Blim <- 0.4 * Bthresh
-    Ftar <- 0.8 * tunepar * Mod@FMSY
-    Fmin <- 0.1 * tunepar * Mod@FMSY
+    ## Ftar <- 0.8 * tunepar * Mod@FMSY
+    ## Fmin <- 0.1 * tunepar * Mod@FMSY
+    Ftar <- tunepar * 0.10
+    Fmin <- 0.1 * Ftar
     Bcurr <- Mod@B[length(Mod@B)]
     if (Bcurr>=Bthresh) {
         Fmort <- Ftar
@@ -367,7 +373,7 @@ class(SP_02) <- 'MP'
 ######@> based on:
 ######@> https://www.iccat.int/Documents/Recs/compendiopdf-e/2017-04-e.pdf
 ######@> HCR ram Ftar = 1, Fmin = 0.1, Blim = 0.4, BMSY = 1...
-SP_03 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 0.38, ...) {
+SP_03 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 1.27, ...) {
     Rec <- new('Rec')
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
@@ -382,13 +388,15 @@ SP_03 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 0.38, ...) {
     Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
     ## apply SP assessment model
     Mod <- SAMtool::SP(x, Data, prior = list(r = c(0.416, 0.148),
-        MSY = c(33000, 0.2)), start = list(dep = 0.98, n = 1))
+        MSY = c(30000, 0.2)), start = list(dep = 0.98, n = 1))
     ## harvest control rule
     ## based on: https://www.iccat.int/Documents/Recs/compendiopdf-e/2017-04-e.pdf
     Bthresh <- Mod@BMSY
     Blim <- 0.4 * Bthresh
-    Ftar <- 1 * tunepar * Mod@FMSY
-    Fmin <- 0.1 * tunepar * Mod@FMSY
+    ## Ftar <- 1 * tunepar * Mod@FMSY
+    ## Fmin <- 0.1 * tunepar * Mod@FMSY
+    Ftar <- tunepar * 0.10
+    Fmin <- 0.1 * Ftar
     Bcurr <- Mod@B[length(Mod@B)]
     if (Bcurr>=Bthresh) {
         Fmort <- Ftar
@@ -408,7 +416,7 @@ class(SP_03) <- 'MP'
 ######@> rule based on:
 ######@> https://www.iccat.int/Documents/Recs/compendiopdf-e/2017-04-e.pdf
 ######@> HCR ram Ftar = 1, Fmin = 0.1, Blim = 0.4, BMSY = 1...
-SP_04 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 0.38, ...) {
+SP_04 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 1.22, ...) {
     Rec <- new('Rec')
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
@@ -423,14 +431,17 @@ SP_04 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 0.38, ...) {
     Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
     ## apply SP assessment model
     Mod <- SAMtool::SP_SS(x, Data, prior = list(r = c(0.416, 0.148),
-        MSY = c(33000, 0.2)), start = list(dep = 0.98, n = 1),
+        MSY = c(30000, 0.2)),
+        start = list(dep = 0.98, n = 1),
         fix_sigma = FALSE, fix_tau = TRUE)
     ## harvest control rule
     ## based on: https://www.iccat.int/Documents/Recs/compendiopdf-e/2017-04-e.pdf
     Bthresh <- Mod@BMSY
     Blim <- 0.4 * Bthresh
-    Ftar <- 1 * tunepar * Mod@FMSY
-    Fmin <- 0.1 * tunepar * Mod@FMSY
+    ## Ftar <- 1 * tunepar * Mod@FMSY
+    ## Fmin <- 0.1 * tunepar * Mod@FMSY
+    Ftar <- tunepar * 0.10
+    Fmin <- 0.1 * Ftar
     Bcurr <- Mod@B[length(Mod@B)]
     if (Bcurr>=Bthresh) {
         Fmort <- Ftar
@@ -448,344 +459,350 @@ class(SP_04) <- 'MP'
 ########################################################################
 ######@> Playing with MPs...
 
-######@> Loading example data...
-Hist_005 <- readRDS("02_Hists/OM005_IVInds.hist")
+## ######@> Loading example data...
+## Hist_005 <- readRDS("02_Hists/OM005_IVInds.hist")
 
-#####@> Data object that will be used in the first projection year...
-Data <- Hist_005@Data
+## #####@> Data object that will be used in the first projection year...
+## Data <- Hist_005@Data
 
-######@> Applying model...
-Mod <- SAMtool::SP_SS(1, Data, prior = list(r = c(0.416, 0.148),
-    MSY = c(33000, 0.2)), start = list(dep = 0.98, n = 1),
-    fix_sigma = FALSE, fix_tau = TRUE)
+## ######@> Applying model...
+## Mod <- SAMtool::SP_SS(1, Data,
+##     prior = list(r = c(0.416, 0.148),
+##         MSY = c(30000, 0.2)),
+##     start = list(dep = 0.98, n = 1),
+##     fix_sigma = FALSE, fix_tau = TRUE)
 
-######@> Defining Catchdf...
-Catchdf <- data.frame(Year = 2021:2022,
-    Catch = c(20048.21, 21377.24))
 
-######@> Testing MPs...
+## Mod2 <- SAMtool::SCA(1, Data, SR = "BH", vulneability = "dome",
+##     CAA_dist = "lognormal")
 
-#####@> CC MP's...
+## ######@> Defining Catchdf...
+## Catchdf <- data.frame(Year = 2021:2022,
+##     Catch = c(20048.21, 21377.24))
 
-####@> 40 kt..
-tempData <- Data
-CC_40kt(1, tempData) # 2021 TAC
+## ######@> Testing MPs...
 
-tempData@Year <- 1952:2021
-CC_40kt(1, tempData) # 2022 TAC
+## #####@> CC MP's...
 
-tempData@Year <- 1952:2022
-CC_40kt(1, tempData) # 2023 TAC
+## ####@> 40 kt..
+## tempData <- Data
+## CC_40kt(1, tempData) # 2021 TAC
 
-tempData@Year <- 1952:2023
-CC_40kt(1, tempData) # 2024 TAC
+## tempData@Year <- 1952:2021
+## CC_40kt(1, tempData) # 2022 TAC
 
-tempData@Year <- 1952:2024
-CC_40kt(1, tempData) # 2025 TAC
+## tempData@Year <- 1952:2022
+## CC_40kt(1, tempData) # 2023 TAC
 
-####@> 35 kt..
-tempData <- Data
-CC_35kt(1, tempData) # 2021 TAC
+## tempData@Year <- 1952:2023
+## CC_40kt(1, tempData) # 2024 TAC
 
-tempData@Year <- 1952:2021
-CC_35kt(1, tempData) # 2022 TAC
+## tempData@Year <- 1952:2024
+## CC_40kt(1, tempData) # 2025 TAC
 
-tempData@Year <- 1952:2022
-CC_35kt(1, tempData) # 2023 TAC
+## ####@> 35 kt..
+## tempData <- Data
+## CC_35kt(1, tempData) # 2021 TAC
 
-tempData@Year <- 1952:2023
-CC_35kt(1, tempData) # 2024 TAC
+## tempData@Year <- 1952:2021
+## CC_35kt(1, tempData) # 2022 TAC
 
-tempData@Year <- 1952:2024
-CC_35kt(1, tempData) # 2025 TAC
+## tempData@Year <- 1952:2022
+## CC_35kt(1, tempData) # 2023 TAC
 
-####@> 30 kt..
-tempData <- Data
-CC_30kt(1, tempData) # 2021 TAC
+## tempData@Year <- 1952:2023
+## CC_35kt(1, tempData) # 2024 TAC
 
-tempData@Year <- 1952:2021
-CC_30kt(1, tempData) # 2022 TAC
+## tempData@Year <- 1952:2024
+## CC_35kt(1, tempData) # 2025 TAC
 
-tempData@Year <- 1952:2022
-CC_30kt(1, tempData) # 2023 TAC
+## ####@> 30 kt..
+## tempData <- Data
+## CC_30kt(1, tempData) # 2021 TAC
 
-tempData@Year <- 1952:2023
-CC_30kt(1, tempData) # 2024 TAC
+## tempData@Year <- 1952:2021
+## CC_30kt(1, tempData) # 2022 TAC
 
-tempData@Year <- 1952:2024
-CC_30kt(1, tempData) # 2025 TAC
+## tempData@Year <- 1952:2022
+## CC_30kt(1, tempData) # 2023 TAC
 
-####@> 25 kt..
-tempData <- Data
-CC_25kt(1, tempData) # 2021 TAC
+## tempData@Year <- 1952:2023
+## CC_30kt(1, tempData) # 2024 TAC
 
-tempData@Year <- 1952:2021
-CC_25kt(1, tempData) # 2022 TAC
+## tempData@Year <- 1952:2024
+## CC_30kt(1, tempData) # 2025 TAC
 
-tempData@Year <- 1952:2022
-CC_25kt(1, tempData) # 2023 TAC
+## ####@> 25 kt..
+## tempData <- Data
+## CC_25kt(1, tempData) # 2021 TAC
 
-tempData@Year <- 1952:2023
-CC_25kt(1, tempData) # 2024 TAC
+## tempData@Year <- 1952:2021
+## CC_25kt(1, tempData) # 2022 TAC
 
-tempData@Year <- 1952:2024
-CC_25kt(1, tempData) # 2025 TAC
+## tempData@Year <- 1952:2022
+## CC_25kt(1, tempData) # 2023 TAC
 
-####@> 20 kt..
-tempData <- Data
-CC_20kt(1, tempData) # 2021 TAC
+## tempData@Year <- 1952:2023
+## CC_25kt(1, tempData) # 2024 TAC
 
-tempData@Year <- 1952:2021
-CC_20kt(1, tempData) # 2022 TAC
+## tempData@Year <- 1952:2024
+## CC_25kt(1, tempData) # 2025 TAC
 
-tempData@Year <- 1952:2022
-CC_20kt(1, tempData) # 2023 TAC
+## ####@> 20 kt..
+## tempData <- Data
+## CC_20kt(1, tempData) # 2021 TAC
 
-tempData@Year <- 1952:2023
-CC_20kt(1, tempData) # 2024 TAC
+## tempData@Year <- 1952:2021
+## CC_20kt(1, tempData) # 2022 TAC
 
-tempData@Year <- 1952:2024
-CC_20kt(1, tempData) # 2025 TAC
+## tempData@Year <- 1952:2022
+## CC_20kt(1, tempData) # 2023 TAC
 
-####@> 15 kt..
-tempData <- Data
-CC_15kt(1, tempData) # 2021 TAC
-
-tempData@Year <- 1952:2021
-CC_15kt(1, tempData) # 2022 TAC
-
-tempData@Year <- 1952:2022
-CC_15kt(1, tempData) # 2023 TAC
-
-tempData@Year <- 1952:2023
-CC_15kt(1, tempData) # 2024 TAC
-
-tempData@Year <- 1952:2024
-CC_15kt(1, tempData) # 2025 TAC
-
-#####@> Empirical MP's...
-
-####@> Iratio..
-tempData <- Data
-Iratio_MOD(1, tempData) # 2021 TAC
-
-tempData@Year <- 1952:2021
-Iratio_MOD(1, tempData) # 2022 TAC
-
-tempData@Year <- 1952:2022
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-Iratio_MOD(1, tempData) # 2023 TAC
-
-tempData@Year <- 1952:2023
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-Iratio_MOD(1, tempData) # 2024 TAC
-
-tempData@Year <- 1952:2024
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-Iratio_MOD(1, tempData) # 2025 TAC
-
-####@> Islope..
-tempData <- Data
-Islope1_MOD(1, tempData) # 2021 TAC
-
-tempData@Year <- 1952:2021
-Islope1_MOD(1, tempData) # 2022 TAC
-
-tempData@Year <- 1952:2022
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-Islope1_MOD(1, tempData) # 2023 TAC
-
-tempData@Year <- 1952:2023
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-Islope1_MOD(1, tempData) # 2024 TAC
-
-tempData@Year <- 1952:2024
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-Islope1_MOD(1, tempData) # 2025 TAC
-
-####@> Islope..
-tempData <- Data
-GBslope_MOD(1, tempData) # 2021 TAC
-
-tempData@Year <- 1952:2021
-GBslope_MOD(1, tempData) # 2022 TAC
-
-tempData@Year <- 1952:2022
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-GBslope_MOD(1, tempData) # 2023 TAC
-
-tempData@Year <- 1952:2023
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-GBslope_MOD(1, tempData) # 2024 TAC
-
-tempData@Year <- 1952:2024
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-GBslope_MOD(1, tempData) # 2025 TAC
-
-#####@> Model-based MP's...
-
-####@> SP_01..
-tempData <- Data
-SP_01(1, tempData) # 2021 TAC
-
-tempData@Year <- 1952:2021
-SP_01(1, tempData) # 2022 TAC
-
-tempData@Year <- 1952:2022
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@CV_Ind <- cbind(tempData@CV_Ind,
-    tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-SP_01(1, tempData) # 2023 TAC
-
-tempData@Year <- 1952:2023
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@CV_Ind <- cbind(tempData@CV_Ind,
-    tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-SP_01(1, tempData) # 2024 TAC
-
-tempData@Year <- 1952:2024
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@CV_Ind <- cbind(tempData@CV_Ind,
-    tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-SP_01(1, tempData) # 2025 TAC
-
-####@> SP_02..
-tempData <- Data
-SP_02(1, tempData) # 2021 TAC
-
-tempData@Year <- 1952:2021
-SP_02(1, tempData) # 2022 TAC
-
-tempData@Year <- 1952:2022
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@CV_Ind <- cbind(tempData@CV_Ind,
-    tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-SP_02(1, tempData) # 2023 TAC
-
-tempData@Year <- 1952:2023
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@CV_Ind <- cbind(tempData@CV_Ind,
-    tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-SP_02(1, tempData) # 2024 TAC
-
-tempData@Year <- 1952:2024
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@CV_Ind <- cbind(tempData@CV_Ind,
-    tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-SP_02(1, tempData) # 2025 TAC
-
-####@> SP_03..
-tempData <- Data
-SP_03(1, tempData) # 2021 TAC
-
-tempData@Year <- 1952:2021
-SP_03(1, tempData) # 2022 TAC
-
-tempData@Year <- 1952:2022
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@CV_Ind <- cbind(tempData@CV_Ind,
-    tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-SP_03(1, tempData) # 2023 TAC
-
-tempData@Year <- 1952:2023
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@CV_Ind <- cbind(tempData@CV_Ind,
-    tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-SP_03(1, tempData) # 2024 TAC
-
-tempData@Year <- 1952:2024
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@CV_Ind <- cbind(tempData@CV_Ind,
-    tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-SP_03(1, tempData) # 2025 TAC
-
-####@> SP_04..
-tempData <- Data
-SP_04(1, tempData) # 2021 TAC
-
-tempData@Year <- 1952:2021
-SP_04(1, tempData) # 2022 TAC
-
-tempData@Year <- 1952:2022
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@CV_Ind <- cbind(tempData@CV_Ind,
-    tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-SP_04(1, tempData) # 2023 TAC
-
-tempData@Year <- 1952:2023
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@CV_Ind <- cbind(tempData@CV_Ind,
-    tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-SP_04(1, tempData) # 2024 TAC
-
-tempData@Year <- 1952:2024
-tempData@Ind <- cbind(tempData@Ind,
-    tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
-tempData@CV_Ind <- cbind(tempData@CV_Ind,
-    tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
-tempData@Cat <- cbind(tempData@Cat,
-    tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
-SP_04(1, tempData) # 2025 TAC
+## tempData@Year <- 1952:2023
+## CC_20kt(1, tempData) # 2024 TAC
+
+## tempData@Year <- 1952:2024
+## CC_20kt(1, tempData) # 2025 TAC
+
+## ####@> 15 kt..
+## tempData <- Data
+## CC_15kt(1, tempData) # 2021 TAC
+
+## tempData@Year <- 1952:2021
+## CC_15kt(1, tempData) # 2022 TAC
+
+## tempData@Year <- 1952:2022
+## CC_15kt(1, tempData) # 2023 TAC
+
+## tempData@Year <- 1952:2023
+## CC_15kt(1, tempData) # 2024 TAC
+
+## tempData@Year <- 1952:2024
+## CC_15kt(1, tempData) # 2025 TAC
+
+## #####@> Empirical MP's...
+
+## ####@> Iratio..
+## tempData <- Data
+## Iratio_MOD(1, tempData) # 2021 TAC
+
+## tempData@Year <- 1952:2021
+## Iratio_MOD(1, tempData) # 2022 TAC
+
+## tempData@Year <- 1952:2022
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## Iratio_MOD(1, tempData) # 2023 TAC
+
+## tempData@Year <- 1952:2023
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## Iratio_MOD(1, tempData) # 2024 TAC
+
+## tempData@Year <- 1952:2024
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## Iratio_MOD(1, tempData) # 2025 TAC
+
+## ####@> Islope..
+## tempData <- Data
+## Islope1_MOD(1, tempData) # 2021 TAC
+
+## tempData@Year <- 1952:2021
+## Islope1_MOD(1, tempData) # 2022 TAC
+
+## tempData@Year <- 1952:2022
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## Islope1_MOD(1, tempData) # 2023 TAC
+
+## tempData@Year <- 1952:2023
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## Islope1_MOD(1, tempData) # 2024 TAC
+
+## tempData@Year <- 1952:2024
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## Islope1_MOD(1, tempData) # 2025 TAC
+
+## ####@> Islope..
+## tempData <- Data
+## GBslope_MOD(1, tempData) # 2021 TAC
+
+## tempData@Year <- 1952:2021
+## GBslope_MOD(1, tempData) # 2022 TAC
+
+## tempData@Year <- 1952:2022
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## GBslope_MOD(1, tempData) # 2023 TAC
+
+## tempData@Year <- 1952:2023
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## GBslope_MOD(1, tempData) # 2024 TAC
+
+## tempData@Year <- 1952:2024
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## GBslope_MOD(1, tempData) # 2025 TAC
+
+## #####@> Model-based MP's...
+
+## ####@> SP_01..
+## tempData <- Data
+## SP_01(1, tempData) # 2021 TAC
+
+## tempData@Year <- 1952:2021
+## SP_01(1, tempData) # 2022 TAC
+
+## tempData@Year <- 1952:2022
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@CV_Ind <- cbind(tempData@CV_Ind,
+##     tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## SP_01(1, tempData) # 2023 TAC
+
+## tempData@Year <- 1952:2023
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@CV_Ind <- cbind(tempData@CV_Ind,
+##     tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## SP_01(1, tempData) # 2024 TAC
+
+## tempData@Year <- 1952:2024
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@CV_Ind <- cbind(tempData@CV_Ind,
+##     tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## SP_01(1, tempData) # 2025 TAC
+
+## ####@> SP_02..
+## tempData <- Data
+## SP_02(1, tempData) # 2021 TAC
+
+## tempData@Year <- 1952:2021
+## SP_02(1, tempData) # 2022 TAC
+
+## tempData@Year <- 1952:2022
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@CV_Ind <- cbind(tempData@CV_Ind,
+##     tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## SP_02(1, tempData) # 2023 TAC
+
+## tempData@Year <- 1952:2023
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@CV_Ind <- cbind(tempData@CV_Ind,
+##     tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## SP_02(1, tempData) # 2024 TAC
+
+## tempData@Year <- 1952:2024
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@CV_Ind <- cbind(tempData@CV_Ind,
+##     tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## SP_02(1, tempData) # 2025 TAC
+
+## ####@> SP_03..
+## tempData <- Data
+## SP_03(1, tempData) # 2021 TAC
+
+## tempData@Year <- 1952:2021
+## SP_03(1, tempData) # 2022 TAC
+
+## tempData@Year <- 1952:2022
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@CV_Ind <- cbind(tempData@CV_Ind,
+##     tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## SP_03(1, tempData) # 2023 TAC
+
+## tempData@Year <- 1952:2023
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@CV_Ind <- cbind(tempData@CV_Ind,
+##     tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## SP_03(1, tempData) # 2024 TAC
+
+## tempData@Year <- 1952:2024
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@CV_Ind <- cbind(tempData@CV_Ind,
+##     tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## SP_03(1, tempData) # 2025 TAC
+
+## ####@> SP_04..
+## tempData <- Data
+## SP_04(1, tempData) # 2021 TAC
+
+## tempData@Year <- 1952:2021
+## SP_04(1, tempData) # 2022 TAC
+
+## tempData@Year <- 1952:2022
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@CV_Ind <- cbind(tempData@CV_Ind,
+##     tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## SP_04(1, tempData) # 2023 TAC
+
+## tempData@Year <- 1952:2023
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@CV_Ind <- cbind(tempData@CV_Ind,
+##     tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## SP_04(1, tempData) # 2024 TAC
+
+## tempData@Year <- 1952:2024
+## tempData@Ind <- cbind(tempData@Ind,
+##     tempData@Ind[ , ncol(tempData@Ind)]) # add another index data point
+## tempData@CV_Ind <- cbind(tempData@CV_Ind,
+##     tempData@CV_Ind[ , ncol(tempData@CV_Ind)]) # add another CV data point
+## tempData@Cat <- cbind(tempData@Cat,
+##     tempData@Cat[ , ncol(tempData@Cat)]) # add another catch data point
+## SP_04(1, tempData) # 2025 TAC
 
 ########################################################################
 ##
