@@ -110,3 +110,14 @@ materials to be used at the 24th Special Meeting of the ICCAT Commission;
 
 9) Support the presentation of W-SKJ MSE progress to the ICCAT Commission, Panel 1, during the
 24th Special Meeting of the ICCAT Commission [11-18 November].
+
+# 4. Code Development
+
+- **Abundance Indices Evaluation** - Work's done [00_script_indices_evaluation_ver00.R]
+- **Import SS3 Stock Assessment Data** - Work's done [01_script_import_SS3_ver00.R]
+- **Operating Models Reference and Robustness Tests** - Work in progress [02_script_simulate_OMs_ver00.R]
+- **Management Procedures** - Work in progress [03_script_prepare_MPs_ver00.R]
+- **Performance Metrics** - Work not started [04_script_prepare_PMs_ver00.R]
+- **Consolidating Results** - Work not started [05_script_results_MSE_ver00.R]
+
+
