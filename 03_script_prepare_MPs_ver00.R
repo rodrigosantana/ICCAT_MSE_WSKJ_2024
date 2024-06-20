@@ -3,7 +3,7 @@
 ##
 ## Maintainer: DatenKraft - SCRS/ICCAT (TT Species Group)
 ## Author: Rodrigo Sant'Ana
-## Created: seg abr 17 17:11:31 2023 (-0300)
+## Created: seg jun 11 17:11:31 2024 (-0300)
 ## Version: 0.0.1
 ##
 ## URL:
@@ -27,9 +27,11 @@ library(openMSE)
 ######@> Setup R...
 
 ######@> Global environment variables...
-Sys.setenv(Initial_MP_Yr = 2021) ##> NOTE: Not working...
-Initial_MP_Yr <- 2021
+## Sys.setenv(Initial_MP_Yr = 2021) ##> NOTE: Not working...
 ## Sys.getenv("Initial_MP_Yr")
+
+####@> Old method...
+Initial_MP_Yr <- 2021
 
 ########################################################################
 ######@> Management Procedures...
@@ -154,6 +156,8 @@ CC_15kt <- function(x, Data, reps = 1, ...) {
 class(CC_15kt) <- "MP"
 
 ######@> Relative Abundance Index MPs...
+
+#####@> Iratio MP...
 Iratio_MOD <- function(x, Data, Interval = 3, Data_Lag = 1, ...) {
     Rec <- new("Rec")
     ## Does TAC need to be updated? (or set a fixed catch if before
@@ -167,6 +171,11 @@ Iratio_MOD <- function(x, Data, Interval = 3, Data_Lag = 1, ...) {
         ## Lag Data
         Data <- Lag_Data(Data, Data_Lag)
         Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
+        ## Smooth combined index
+        index <- smoothed_index <- Data@Ind[x,]
+        smoothed <- stats::smooth(index[!is.na(index)])
+        smoothed_index[!is.na(smoothed_index)] <- smoothed
+        Data@Ind[x,] <- smoothed_index
         ## Applied Iration MP to lagged data
         Rec <- Iratio(x, Data, reps = 1)
         return(Rec)
@@ -174,6 +183,7 @@ Iratio_MOD <- function(x, Data, Interval = 3, Data_Lag = 1, ...) {
 }
 class(Iratio_MOD) <- "MP"
 
+#####@> Islope1 MP...
 Islope1_MOD <- function(x, Data, Interval = 3, Data_Lag = 1, ...) {
     Rec <- new("Rec")
     ## Does TAC need to be updated? (or set a fixed catch if before
@@ -187,6 +197,11 @@ Islope1_MOD <- function(x, Data, Interval = 3, Data_Lag = 1, ...) {
         ## Lag Data
         Data <- Lag_Data(Data, Data_Lag)
         Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
+        ## Smooth combined index
+        index <- smoothed_index <- Data@Ind[x,]
+        smoothed <- stats::smooth(index[!is.na(index)])
+        smoothed_index[!is.na(smoothed_index)] <- smoothed
+        Data@Ind[x,] <- smoothed_index
         ## Applied Islope1 MP to lagged data
         Rec <- Islope1(x, Data, reps = 1)
         return(Rec)
@@ -194,6 +209,7 @@ Islope1_MOD <- function(x, Data, Interval = 3, Data_Lag = 1, ...) {
 }
 class(Islope1_MOD) <- "MP"
 
+#####@> GBslope MP...
 GBslope_MOD <- function(x, Data, Interval = 3, Data_Lag = 1, ...) {
     Rec <- new("Rec")
     ## Does TAC need to be updated? (or set a fixed catch if before
@@ -207,12 +223,64 @@ GBslope_MOD <- function(x, Data, Interval = 3, Data_Lag = 1, ...) {
         ## Lag Data
         Data <- Lag_Data(Data, Data_Lag)
         Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
+        ## Smooth combined index
+        index <- smoothed_index <- Data@Ind[x,]
+        smoothed <- stats::smooth(index[!is.na(index)])
+        smoothed_index[!is.na(smoothed_index)] <- smoothed
+        Data@Ind[x,] <- smoothed_index
         ## Applied Islope1 MP to lagged data
         Rec <- GB_slope(x, Data, reps = 1)
         return(Rec)
     }
 }
 class(GBslope_MOD) <- "MP"
+
+#####@> Constant Exploitation with Control Rule MP...
+CE <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 1,
+               mc = 0.25, yrs = c(5, 3), ...) {
+    Rec <- new("Rec")
+    ## Does TAC need to be updated? (or set a fixed catch if before
+    ## Initial_MP_Yr)
+    if (SWOMSE::SameTAC(Initial_MP_Yr, Interval, Data)) {
+        Rec@TAC <- Data@MPrec[x]
+        Rec <- SWOMSE::FixedTAC(Rec, Data) # use actual catches if they are available
+        return(Rec)
+    }
+    ## Lag Data
+    Data <- Lag_Data(Data, Data_Lag)
+    ## smooth combined index
+    index <- smoothed_index <- Data@Ind[x,]
+    smoothed <- stats::smooth(index[!is.na(index)])
+    smoothed_index[!is.na(smoothed_index)] <- smoothed
+    Data@Ind[x,] <- smoothed_index
+    ## Calculate Historical Relative Exploitation Rate
+    yr.ind <- which(Data@Year == 2017)
+    hist.yrs <- (yr.ind - yrs[1] + 1):yr.ind
+    histER <- mean(Data@Cat[x, hist.yrs]) / mean(Data@Ind[x, hist.yrs])
+    ## Calculate Current Relative Exploitation Rate
+    current_yr <- length(Data@Ind[x,])
+    recent_yrs <- (current_yr - yrs[2]+1):current_yr
+    curER <- mean(Data@Cat[x, recent_yrs]) / mean(Data@Ind[x,
+               recent_yrs])
+    ## Control Rule
+    histInd <- mean(Data@Ind[x, hist.yrs])
+    curInd <- mean(Data@Ind[x, recent_yrs], na.rm = TRUE)
+    ind_ratio <- curInd/histInd
+    if (ind_ratio >= 0.8) {
+        targER <- histER
+    } else if (ind_ratio > 0.5) {
+        targER <- histER * ( -1.4 + 3 * ind_ratio)
+    } else {
+        targER <- 0.1 * histER
+    }
+    ## Exploitation Rate Ratio
+    ER_ratio <- targER/curER
+    TAC <- ER_ratio * tunepar * Data@MPrec[x]
+    ## Maximum allowed change in TAC
+    Rec@TAC <- SWOMSE::MaxChange(TAC, Data@MPrec[x], mc)
+    Rec
+}
+class(CE) <- "MP"
 
 #####@> Stastical catch-at-age models HCRs...
 SCA_00 <- make_MP(SCA,
@@ -286,7 +354,7 @@ class(SCA_02) <- 'MP'
 ######@> linearly reduces F (Schaeffer model) - harvest control rule
 ######@> based on: [with TAC fixed first year]
 ######@> https://www.iccat.int/Documents/Recs/compendiopdf-e/2017-04-e.pdf...
-SP_01 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 1.27, ...) {
+SP_01 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 1.04, ...) {
     Rec <- new('Rec')
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
@@ -299,6 +367,11 @@ SP_01 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 1.27, ...) {
     ## Lag Data
     Data <- Lag_Data(Data, Data_Lag)
     Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
+    ## Smooth combined index
+    index <- smoothed_index <- Data@Ind[x,]
+    smoothed <- stats::smooth(index[!is.na(index)])
+    smoothed_index[!is.na(smoothed_index)] <- smoothed
+    Data@Ind[x,] <- smoothed_index
     ## apply SP assessment model
     Mod <- SAMtool::SP(x, Data, prior = list(r = c(0.416, 0.148),
         MSY = c(30000, 0.2)), start = list(dep = 0.98, n = 1))
@@ -341,6 +414,11 @@ SP_02 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 1.22, ...) {
     ## Lag Data
     Data <- Lag_Data(Data, Data_Lag)
     Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
+    ## Smooth combined index
+    index <- smoothed_index <- Data@Ind[x,]
+    smoothed <- stats::smooth(index[!is.na(index)])
+    smoothed_index[!is.na(smoothed_index)] <- smoothed
+    Data@Ind[x,] <- smoothed_index
     ## apply SP assessment model
     Mod <- SAMtool::SP_SS(x, Data, prior = list(r = c(0.416, 0.148),
         MSY = c(30000, 0.2)), start = list(dep = 0.98, n = 1),
@@ -386,6 +464,11 @@ SP_03 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 1.27, ...) {
     ## Lag Data
     Data <- Lag_Data(Data, Data_Lag)
     Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
+    ## Smooth combined index
+    index <- smoothed_index <- Data@Ind[x,]
+    smoothed <- stats::smooth(index[!is.na(index)])
+    smoothed_index[!is.na(smoothed_index)] <- smoothed
+    Data@Ind[x,] <- smoothed_index
     ## apply SP assessment model
     Mod <- SAMtool::SP(x, Data, prior = list(r = c(0.416, 0.148),
         MSY = c(30000, 0.2)), start = list(dep = 0.98, n = 1))
@@ -429,6 +512,11 @@ SP_04 <- function(x, Data, Data_Lag = 1, Interval = 3, tunepar = 1.22, ...) {
     ## Lag Data
     Data <- Lag_Data(Data, Data_Lag)
     Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
+    ## Smooth combined index
+    index <- smoothed_index <- Data@Ind[x,]
+    smoothed <- stats::smooth(index[!is.na(index)])
+    smoothed_index[!is.na(smoothed_index)] <- smoothed
+    Data@Ind[x,] <- smoothed_index
     ## apply SP assessment model
     Mod <- SAMtool::SP_SS(x, Data, prior = list(r = c(0.416, 0.148),
         MSY = c(30000, 0.2)),

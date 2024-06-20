@@ -111,8 +111,9 @@ OM_Objects <- names(OMs)
 for(i in seq_along(OM_Objects)) {
     OM <- OMs[[i]]
     OM@interval <- 3
+    OM@nsim <- 300
     Hist <- Simulate(OM, parallel = FALSE, silent = FALSE)
-    nm <- paste0(OM_Objects[i], "_IVInds", ".hist")
+    nm <- paste0(OM_Objects[i], "_IVInds_ver02", ".hist")
     saveRDS(Hist, file.path("02_Hists", nm))
 }
 
