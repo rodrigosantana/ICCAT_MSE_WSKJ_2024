@@ -44,7 +44,7 @@ if(packageVersion("openMSE") == "1.1.1") {
 }
 
 #####@> nswo-mse (0.25.1)...
-if(packageVersion("SWOMSE") == "0.25.1") {
+if(packageVersion("SWOMSE") >= "0.25.1") {
     print("SWOMSE R package already installed is the correct version")
 } else {
     pak::pkg_install("ICCAT/nswo-mse")
@@ -132,6 +132,51 @@ load("05_Basement/tsIndex_ver01.RData")
 ########################################################################
 ######@> Importing OMs...
 
+######@> AH - Set Some Global Objects for All OMs
+
+# set interval to 1
+interval <- 1
+
+# create Data object to be used in all OMs
+# ie the actual data that would be used if you were to apply an MP to produce
+# the TAC for next year
+
+SSdir <- paste0(path01, "WSKJ_EstRec93_Qnt25_h6")
+OM1.Data <- SS2Data(SSdir,
+                    Name = "OM1 Data WSKJ_EstRec93_Qnt25_h6",
+                    Common_Name = "Skipjack",
+                    Species = "Katsuwonus pelamis",
+                    Region = "Western Atlantic Ocean")
+
+# Historical Data should be identical across all OMs
+WSJK_Data <- new('Data')
+
+slots_to_copy <- c('Year', 'LHYear', 'Cat', 'CV_Cat')
+for (sl in slots_to_copy) {
+  slot(WSJK_Data, sl) <- slot(OM1.Data, sl)
+}
+
+# data manually added:
+index <- c(rep(NA, 29),
+           tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
+index <- index/mean(index, na.rm=TRUE)
+names(index) <- OM1.Data@Year
+cv_index <- c(rep(NA, 29), rep(0.2, 40))
+names(cv_index) <- OM1.Data@Year
+
+WSJK_Data@Ind <- array(index, dim = c(1, length(index)))
+WSJK_Data@CV_Ind <- array(cv_index, dim = c(1, length(index)))
+
+
+# function to add WSJK_Data and I_beta=1 to cpars
+update_cpars <- function(OM) {
+  OM@cpars$Data <- WSJK_Data
+  OM@cpars$I_beta <- rep(1, OM@nsim)
+  OM
+}
+
+
+
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt25_h6
 
@@ -142,10 +187,10 @@ SSdir <- paste0(path01, "WSKJ_EstRec93_Qnt25_h6")
 OM1 <- SS2OM(SSdir,
              nsim = 100,
              proyears = 30,
-             reps = 100,
+             reps = 1,
              maxF = 3,
              seed = 1,
-             interval = 3,
+             interval = interval,
              pstar = 0.5,
              Obs = MSEtool::Precise_Unbiased,
              Imp = MSEtool::Perfect_Imp,
@@ -159,38 +204,41 @@ OM1 <- SS2OM(SSdir,
              dir = output.dir,
              open_file = TRUE)
 
-######@> Importing data from SS...
-OM1.Data <- SS2Data(SSdir,
-                    Name = "OM1 Data WSKJ_EstRec93_Qnt25_h6",
-                    Common_Name = "Skipjack",
-                    Species = "Katsuwonus pelamis",
-                    Region = "Western Atlantic Ocean")
+# ######@> Importing data from SS...
+# OM1.Data <- SS2Data(SSdir,
+#                     Name = "OM1 Data WSKJ_EstRec93_Qnt25_h6",
+#                     Common_Name = "Skipjack",
+#                     Species = "Katsuwonus pelamis",
+#                     Region = "Western Atlantic Ocean")
+#
+# #####@> Selecting and looking for the inverse-variance combined
+# #####@> indices...
+#
+# ####@> Preparing the index combined vector...
+# index <- c(rep(NA, 29),
+#     tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
+# names(index) <- OM1.Data@Year
+# cv_index <- c(rep(NA, 29), rep(0.2, 40))
+# names(cv_index) <- OM1.Data@Year
+#
+# ####@> Populate the index slot in Data object...
+# OM1.Data@Ind <- array(index, dim = c(1, length(OM1.Data@Year)))
+# OM1.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM1.Data@Year)))
+#
+# #####@> Adding OM1.Data in cpars data compartment...
 
-#####@> Selecting and looking for the inverse-variance combined
-#####@> indices...
+#####@> Update cpars with WSJK_Data and I_beta
+OM1 <- update_cpars(OM1)
 
-####@> Preparing the index combined vector...
-index <- c(rep(NA, 29),
-    tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
-names(index) <- OM1.Data@Year
-cv_index <- c(rep(NA, 29), rep(0.2, 40))
-names(cv_index) <- OM1.Data@Year
-
-####@> Populate the index slot in Data object...
-OM1.Data@Ind <- array(index, dim = c(1, length(OM1.Data@Year)))
-OM1.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM1.Data@Year)))
-
-#####@> Adding OM1.Data in cpars data compartment...
-OM1@cpars$Data <- OM1.Data
 
 #####@> Looking to the OM...
-plot_SS2OM(OM1,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt25_h6",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+# plot_SS2OM(OM1,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt25_h6",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt50_h6
@@ -205,7 +253,7 @@ OM2 <- SS2OM(SSdir,
              reps = 100,
              maxF = 3,
              seed = 1,
-             interval = 3,
+             interval = interval,
              pstar = 0.5,
              Obs = MSEtool::Precise_Unbiased,
              Imp = MSEtool::Perfect_Imp,
@@ -219,38 +267,40 @@ OM2 <- SS2OM(SSdir,
              dir = output.dir,
              open_file = TRUE)
 
-######@> Importing data from SS...
-OM2.Data <- SS2Data(SSdir,
-                    Name = "OM2 Data WSKJ_EstRec93_Qnt50_h6",
-                    Common_Name = "Skipjack",
-                    Species = "Katsuwonus pelamis",
-                    Region = "Western Atlantic Ocean")
-
-#####@> Selecting and looking for the inverse-variance combined
-#####@> indices...
-
-####@> Preparing the index combined vector...
-index <- c(rep(NA, 29),
-    tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
-names(index) <- OM2.Data@Year
-cv_index <- c(rep(NA, 29), rep(0.2, 40))
-names(cv_index) <- OM2.Data@Year
-
-####@> Populate the index slot in Data object...
-OM2.Data@Ind <- array(index, dim = c(1, length(OM2.Data@Year)))
-OM2.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM2.Data@Year)))
-
-#####@> Adding OM2.Data in cpars data compartment...
-OM2@cpars$Data <- OM2.Data
+OM2 <- update_cpars(OM2)
+#
+# ######@> Importing data from SS...
+# OM2.Data <- SS2Data(SSdir,
+#                     Name = "OM2 Data WSKJ_EstRec93_Qnt50_h6",
+#                     Common_Name = "Skipjack",
+#                     Species = "Katsuwonus pelamis",
+#                     Region = "Western Atlantic Ocean")
+#
+# #####@> Selecting and looking for the inverse-variance combined
+# #####@> indices...
+#
+# ####@> Preparing the index combined vector...
+# index <- c(rep(NA, 29),
+#     tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
+# names(index) <- OM2.Data@Year
+# cv_index <- c(rep(NA, 29), rep(0.2, 40))
+# names(cv_index) <- OM2.Data@Year
+#
+# ####@> Populate the index slot in Data object...
+# OM2.Data@Ind <- array(index, dim = c(1, length(OM2.Data@Year)))
+# OM2.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM2.Data@Year)))
+#
+# #####@> Adding OM2.Data in cpars data compartment...
+# OM2@cpars$Data <- OM2.Data
 
 #####@> Looking to the OM...
-plot_SS2OM(OM2,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt50_h6",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+# plot_SS2OM(OM2,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt50_h6",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt75_h6
@@ -265,7 +315,7 @@ OM3 <- SS2OM(SSdir,
              reps = 100,
              maxF = 3,
              seed = 1,
-             interval = 3,
+             interval = interval,
              pstar = 0.5,
              Obs = MSEtool::Precise_Unbiased,
              Imp = MSEtool::Perfect_Imp,
@@ -279,38 +329,40 @@ OM3 <- SS2OM(SSdir,
              dir = output.dir,
              open_file = TRUE)
 
-######@> Importing data from SS...
-OM3.Data <- SS2Data(SSdir,
-                    Name = "OM3 Data WSKJ_EstRec93_Qnt75_h6",
-                    Common_Name = "Skipjack",
-                    Species = "Katsuwonus pelamis",
-                    Region = "Western Atlantic Ocean")
+OM3 <- update_cpars(OM3)
 
-#####@> Selecting and looking for the inverse-variance combined
-#####@> indices...
-
-####@> Preparing the index combined vector...
-index <- c(rep(NA, 29),
-    tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
-names(index) <- OM3.Data@Year
-cv_index <- c(rep(NA, 29), rep(0.2, 40))
-names(cv_index) <- OM3.Data@Year
-
-####@> Populate the index slot in Data object...
-OM3.Data@Ind <- array(index, dim = c(1, length(OM3.Data@Year)))
-OM3.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM3.Data@Year)))
-
-#####@> Adding OM3.Data in cpars data compartment...
-OM3@cpars$Data <- OM3.Data
+# ######@> Importing data from SS...
+# OM3.Data <- SS2Data(SSdir,
+#                     Name = "OM3 Data WSKJ_EstRec93_Qnt75_h6",
+#                     Common_Name = "Skipjack",
+#                     Species = "Katsuwonus pelamis",
+#                     Region = "Western Atlantic Ocean")
+#
+# #####@> Selecting and looking for the inverse-variance combined
+# #####@> indices...
+#
+# ####@> Preparing the index combined vector...
+# index <- c(rep(NA, 29),
+#     tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
+# names(index) <- OM3.Data@Year
+# cv_index <- c(rep(NA, 29), rep(0.2, 40))
+# names(cv_index) <- OM3.Data@Year
+#
+# ####@> Populate the index slot in Data object...
+# OM3.Data@Ind <- array(index, dim = c(1, length(OM3.Data@Year)))
+# OM3.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM3.Data@Year)))
+#
+# #####@> Adding OM3.Data in cpars data compartment...
+# OM3@cpars$Data <- OM3.Data
 
 #####@> Looking to the OM...
-plot_SS2OM(OM3,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt75_h6",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+# plot_SS2OM(OM3,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt75_h6",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt25_h7
@@ -325,7 +377,7 @@ OM4 <- SS2OM(SSdir,
              reps = 100,
              maxF = 3,
              seed = 1,
-             interval = 3,
+             interval = interval,
              pstar = 0.5,
              Obs = MSEtool::Precise_Unbiased,
              Imp = MSEtool::Perfect_Imp,
@@ -339,38 +391,40 @@ OM4 <- SS2OM(SSdir,
              dir = output.dir,
              open_file = TRUE)
 
-######@> Importing data from SS...
-OM4.Data <- SS2Data(SSdir,
-                    Name = "OM4 Data WSKJ_EstRec93_Qnt25_h7",
-                    Common_Name = "Skipjack",
-                    Species = "Katsuwonus pelamis",
-                    Region = "Western Atlantic Ocean")
+OM4 <- update_cpars(OM4)
 
-#####@> Selecting and looking for the inverse-variance combined
-#####@> indices...
-
-####@> Preparing the index combined vector...
-index <- c(rep(NA, 29),
-    tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
-names(index) <- OM4.Data@Year
-cv_index <- c(rep(NA, 29), rep(0.2, 40))
-names(cv_index) <- OM4.Data@Year
-
-####@> Populate the index slot in Data object...
-OM4.Data@Ind <- array(index, dim = c(1, length(OM4.Data@Year)))
-OM4.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM4.Data@Year)))
-
-#####@> Adding OM4.Data in cpars data compartment...
-OM4@cpars$Data <- OM4.Data
-
-#####@> Looking to the OM...
-plot_SS2OM(OM4,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt25_h7",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+# ######@> Importing data from SS...
+# OM4.Data <- SS2Data(SSdir,
+#                     Name = "OM4 Data WSKJ_EstRec93_Qnt25_h7",
+#                     Common_Name = "Skipjack",
+#                     Species = "Katsuwonus pelamis",
+#                     Region = "Western Atlantic Ocean")
+#
+# #####@> Selecting and looking for the inverse-variance combined
+# #####@> indices...
+#
+# ####@> Preparing the index combined vector...
+# index <- c(rep(NA, 29),
+#     tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
+# names(index) <- OM4.Data@Year
+# cv_index <- c(rep(NA, 29), rep(0.2, 40))
+# names(cv_index) <- OM4.Data@Year
+#
+# ####@> Populate the index slot in Data object...
+# OM4.Data@Ind <- array(index, dim = c(1, length(OM4.Data@Year)))
+# OM4.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM4.Data@Year)))
+#
+# #####@> Adding OM4.Data in cpars data compartment...
+# OM4@cpars$Data <- OM4.Data
+#
+# #####@> Looking to the OM...
+# plot_SS2OM(OM4,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt25_h7",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt50_h7
@@ -385,7 +439,7 @@ OM5 <- SS2OM(SSdir,
              reps = 100,
              maxF = 3,
              seed = 1,
-             interval = 3,
+             interval = interval,
              pstar = 0.5,
              Obs = MSEtool::Precise_Unbiased,
              Imp = MSEtool::Perfect_Imp,
@@ -399,38 +453,41 @@ OM5 <- SS2OM(SSdir,
              dir = output.dir,
              open_file = TRUE)
 
-######@> Importing data from SS...
-OM5.Data <- SS2Data(SSdir,
-                    Name = "OM5 Data WSKJ_EstRec93_Qnt50_h7",
-                    Common_Name = "Skipjack",
-                    Species = "Katsuwonus pelamis",
-                    Region = "Western Atlantic Ocean")
 
-#####@> Selecting and looking for the inverse-variance combined
-#####@> indices...
-
-####@> Preparing the index combined vector...
-index <- c(rep(NA, 29),
-    tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
-names(index) <- OM5.Data@Year
-cv_index <- c(rep(NA, 29), rep(0.2, 40))
-names(cv_index) <- OM5.Data@Year
-
-####@> Populate the index slot in Data object...
-OM5.Data@Ind <- array(index, dim = c(1, length(OM5.Data@Year)))
-OM5.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM5.Data@Year)))
-
-#####@> Adding OM5.Data in cpars data compartment...
-OM5@cpars$Data <- OM5.Data
-
-#####@> Looking to the OM...
-plot_SS2OM(OM5,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt50_h7",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+OM5 <- update_cpars(OM5)
+#
+# ######@> Importing data from SS...
+# OM5.Data <- SS2Data(SSdir,
+#                     Name = "OM5 Data WSKJ_EstRec93_Qnt50_h7",
+#                     Common_Name = "Skipjack",
+#                     Species = "Katsuwonus pelamis",
+#                     Region = "Western Atlantic Ocean")
+#
+# #####@> Selecting and looking for the inverse-variance combined
+# #####@> indices...
+#
+# ####@> Preparing the index combined vector...
+# index <- c(rep(NA, 29),
+#     tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
+# names(index) <- OM5.Data@Year
+# cv_index <- c(rep(NA, 29), rep(0.2, 40))
+# names(cv_index) <- OM5.Data@Year
+#
+# ####@> Populate the index slot in Data object...
+# OM5.Data@Ind <- array(index, dim = c(1, length(OM5.Data@Year)))
+# OM5.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM5.Data@Year)))
+#
+# #####@> Adding OM5.Data in cpars data compartment...
+# OM5@cpars$Data <- OM5.Data
+#
+# #####@> Looking to the OM...
+# plot_SS2OM(OM5,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt50_h7",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt75_h7
@@ -445,7 +502,7 @@ OM6 <- SS2OM(SSdir,
              reps = 100,
              maxF = 3,
              seed = 1,
-             interval = 3,
+             interval = interval,
              pstar = 0.5,
              Obs = MSEtool::Precise_Unbiased,
              Imp = MSEtool::Perfect_Imp,
@@ -459,39 +516,40 @@ OM6 <- SS2OM(SSdir,
              dir = output.dir,
              open_file = TRUE)
 
-
-######@> Importing data from SS...
-OM6.Data <- SS2Data(SSdir,
-                    Name = "OM6 Data WSKJ_EstRec93_Qnt75_h7",
-                    Common_Name = "Skipjack",
-                    Species = "Katsuwonus pelamis",
-                    Region = "Western Atlantic Ocean")
-
-#####@> Selecting and looking for the inverse-variance combined
-#####@> indices...
-
-####@> Preparing the index combined vector...
-index <- c(rep(NA, 29),
-    tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
-names(index) <- OM6.Data@Year
-cv_index <- c(rep(NA, 29), rep(0.2, 40))
-names(cv_index) <- OM6.Data@Year
-
-####@> Populate the index slot in Data object...
-OM6.Data@Ind <- array(index, dim = c(1, length(OM6.Data@Year)))
-OM6.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM6.Data@Year)))
-
-#####@> Adding OM6.Data in cpars data compartment...
-OM6@cpars$Data <- OM6.Data
-
-#####@> Looking to the OM...
-plot_SS2OM(OM6,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt75_h7",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+OM6 <- update_cpars(OM6)
+#
+# ######@> Importing data from SS...
+# OM6.Data <- SS2Data(SSdir,
+#                     Name = "OM6 Data WSKJ_EstRec93_Qnt75_h7",
+#                     Common_Name = "Skipjack",
+#                     Species = "Katsuwonus pelamis",
+#                     Region = "Western Atlantic Ocean")
+#
+# #####@> Selecting and looking for the inverse-variance combined
+# #####@> indices...
+#
+# ####@> Preparing the index combined vector...
+# index <- c(rep(NA, 29),
+#     tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
+# names(index) <- OM6.Data@Year
+# cv_index <- c(rep(NA, 29), rep(0.2, 40))
+# names(cv_index) <- OM6.Data@Year
+#
+# ####@> Populate the index slot in Data object...
+# OM6.Data@Ind <- array(index, dim = c(1, length(OM6.Data@Year)))
+# OM6.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM6.Data@Year)))
+#
+# #####@> Adding OM6.Data in cpars data compartment...
+# OM6@cpars$Data <- OM6.Data
+#
+# #####@> Looking to the OM...
+# plot_SS2OM(OM6,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt75_h7",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt25_h8
@@ -506,7 +564,7 @@ OM7 <- SS2OM(SSdir,
              reps = 100,
              maxF = 3,
              seed = 1,
-             interval = 3,
+             interval = interval,
              pstar = 0.5,
              Obs = MSEtool::Precise_Unbiased,
              Imp = MSEtool::Perfect_Imp,
@@ -520,38 +578,40 @@ OM7 <- SS2OM(SSdir,
              dir = output.dir,
              open_file = TRUE)
 
-######@> Importing data from SS...
-OM7.Data <- SS2Data(SSdir,
-                    Name = "OM7 Data WSKJ_EstRec93_Qnt25_h8",
-                    Common_Name = "Skipjack",
-                    Species = "Katsuwonus pelamis",
-                    Region = "Western Atlantic Ocean")
-
-#####@> Selecting and looking for the inverse-variance combined
-#####@> indices...
-
-####@> Preparing the index combined vector...
-index <- c(rep(NA, 29),
-    tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
-names(index) <- OM7.Data@Year
-cv_index <- c(rep(NA, 29), rep(0.2, 40))
-names(cv_index) <- OM7.Data@Year
-
-####@> Populate the index slot in Data object...
-OM7.Data@Ind <- array(index, dim = c(1, length(OM7.Data@Year)))
-OM7.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM7.Data@Year)))
-
-#####@> Adding OM7.Data in cpars data compartment...
-OM7@cpars$Data <- OM7.Data
+OM7 <- update_cpars(OM7)
+#
+# ######@> Importing data from SS...
+# OM7.Data <- SS2Data(SSdir,
+#                     Name = "OM7 Data WSKJ_EstRec93_Qnt25_h8",
+#                     Common_Name = "Skipjack",
+#                     Species = "Katsuwonus pelamis",
+#                     Region = "Western Atlantic Ocean")
+#
+# #####@> Selecting and looking for the inverse-variance combined
+# #####@> indices...
+#
+# ####@> Preparing the index combined vector...
+# index <- c(rep(NA, 29),
+#     tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
+# names(index) <- OM7.Data@Year
+# cv_index <- c(rep(NA, 29), rep(0.2, 40))
+# names(cv_index) <- OM7.Data@Year
+#
+# ####@> Populate the index slot in Data object...
+# OM7.Data@Ind <- array(index, dim = c(1, length(OM7.Data@Year)))
+# OM7.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM7.Data@Year)))
+#
+# #####@> Adding OM7.Data in cpars data compartment...
+# OM7@cpars$Data <- OM7.Data
 
 #####@> Looking to the OM...
-plot_SS2OM(OM7,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt25_h8",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+# plot_SS2OM(OM7,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt25_h8",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt50_h8
@@ -566,7 +626,7 @@ OM8 <- SS2OM(SSdir,
              reps = 100,
              maxF = 3,
              seed = 1,
-             interval = 3,
+             interval = interval,
              pstar = 0.5,
              Obs = MSEtool::Precise_Unbiased,
              Imp = MSEtool::Perfect_Imp,
@@ -580,38 +640,40 @@ OM8 <- SS2OM(SSdir,
              dir = output.dir,
              open_file = TRUE)
 
-######@> Importing data from SS...
-OM8.Data <- SS2Data(SSdir,
-                    Name = "OM8 Data WSKJ_EstRec93_Qnt50_h8",
-                    Common_Name = "Skipjack",
-                    Species = "Katsuwonus pelamis",
-                    Region = "Western Atlantic Ocean")
-
-#####@> Selecting and looking for the inverse-variance combined
-#####@> indices...
-
-####@> Preparing the index combined vector...
-index <- c(rep(NA, 29),
-    tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
-names(index) <- OM8.Data@Year
-cv_index <- c(rep(NA, 29), rep(0.2, 40))
-names(cv_index) <- OM8.Data@Year
-
-####@> Populate the index slot in Data object...
-OM8.Data@Ind <- array(index, dim = c(1, length(OM8.Data@Year)))
-OM8.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM8.Data@Year)))
-
-#####@> Adding OM8.Data in cpars data compartment...
-OM8@cpars$Data <- OM8.Data
-
-#####@> Looking to the OM...
-plot_SS2OM(OM8,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt50_h8",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+OM8 <- update_cpars(OM8)
+#
+# ######@> Importing data from SS...
+# OM8.Data <- SS2Data(SSdir,
+#                     Name = "OM8 Data WSKJ_EstRec93_Qnt50_h8",
+#                     Common_Name = "Skipjack",
+#                     Species = "Katsuwonus pelamis",
+#                     Region = "Western Atlantic Ocean")
+#
+# #####@> Selecting and looking for the inverse-variance combined
+# #####@> indices...
+#
+# ####@> Preparing the index combined vector...
+# index <- c(rep(NA, 29),
+#     tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
+# names(index) <- OM8.Data@Year
+# cv_index <- c(rep(NA, 29), rep(0.2, 40))
+# names(cv_index) <- OM8.Data@Year
+#
+# ####@> Populate the index slot in Data object...
+# OM8.Data@Ind <- array(index, dim = c(1, length(OM8.Data@Year)))
+# OM8.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM8.Data@Year)))
+#
+# #####@> Adding OM8.Data in cpars data compartment...
+# OM8@cpars$Data <- OM8.Data
+#
+# #####@> Looking to the OM...
+# plot_SS2OM(OM8,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt50_h8",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt75_h8
@@ -626,7 +688,7 @@ OM9 <- SS2OM(SSdir,
              reps = 100,
              maxF = 3,
              seed = 1,
-             interval = 3,
+             interval = interval,
              pstar = 0.5,
              Obs = MSEtool::Precise_Unbiased,
              Imp = MSEtool::Perfect_Imp,
@@ -640,38 +702,40 @@ OM9 <- SS2OM(SSdir,
              dir = output.dir,
              open_file = TRUE)
 
-######@> Importing data from SS...
-OM9.Data <- SS2Data(SSdir,
-                    Name = "OM9 Data WSKJ_EstRec93_Qnt75_h8",
-                    Common_Name = "Skipjack",
-                    Species = "Katsuwonus pelamis",
-                    Region = "Western Atlantic Ocean")
-
-#####@> Selecting and looking for the inverse-variance combined
-#####@> indices...
-
-####@> Preparing the index combined vector...
-index <- c(rep(NA, 29),
-    tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
-names(index) <- OM9.Data@Year
-cv_index <- c(rep(NA, 29), rep(0.2, 40))
-names(cv_index) <- OM9.Data@Year
-
-####@> Populate the index slot in Data object...
-OM9.Data@Ind <- array(index, dim = c(1, length(OM9.Data@Year)))
-OM9.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM9.Data@Year)))
-
-#####@> Adding OM9.Data in cpars data compartment...
-OM9@cpars$Data <- OM9.Data
-
-#####@> Looking to the OM...
-plot_SS2OM(OM9,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt75_h8",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+OM9 <- update_cpars(OM9)
+#
+# ######@> Importing data from SS...
+# OM9.Data <- SS2Data(SSdir,
+#                     Name = "OM9 Data WSKJ_EstRec93_Qnt75_h8",
+#                     Common_Name = "Skipjack",
+#                     Species = "Katsuwonus pelamis",
+#                     Region = "Western Atlantic Ocean")
+#
+# #####@> Selecting and looking for the inverse-variance combined
+# #####@> indices...
+#
+# ####@> Preparing the index combined vector...
+# index <- c(rep(NA, 29),
+#     tsIndex$Obs[tsIndex$Fleet == "Averaging Index 03"][1:40])
+# names(index) <- OM9.Data@Year
+# cv_index <- c(rep(NA, 29), rep(0.2, 40))
+# names(cv_index) <- OM9.Data@Year
+#
+# ####@> Populate the index slot in Data object...
+# OM9.Data@Ind <- array(index, dim = c(1, length(OM9.Data@Year)))
+# OM9.Data@CV_Ind <- array(cv_index, dim = c(1, length(OM9.Data@Year)))
+#
+# #####@> Adding OM9.Data in cpars data compartment...
+# OM9@cpars$Data <- OM9.Data
+#
+# #####@> Looking to the OM...
+# plot_SS2OM(OM9,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt75_h8",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>----------------------------------------------------------------
 ######@> Implementation error 10%

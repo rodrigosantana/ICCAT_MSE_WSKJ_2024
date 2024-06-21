@@ -110,7 +110,7 @@ OM_Objects <- names(OMs)
 ######@> Looping to create historical data...
 for(i in seq_along(OM_Objects)) {
     OM <- OMs[[i]]
-    OM@interval <- 3
+    # OM@interval <- 3 # set to 1 in import_SS3 script
     OM@nsim <- 300
     Hist <- Simulate(OM, parallel = FALSE, silent = FALSE)
     nm <- paste0(OM_Objects[i], "_IVInds_ver02", ".hist")
@@ -120,19 +120,21 @@ for(i in seq_along(OM_Objects)) {
 ########################################################################
 ######@> Simulating Projections Data...
 
-######@> Loading history objects...
-Hists <- sapply(dir("02_Hists", full.names = TRUE), readRDS)
+# AH Commented out for now as MP projections are being done in tuning scripts ...
 
-#####@> Setting names for Hists...
-names(Hists) <- paste0("OM", sprintf("%03d", 1:27))
-
-######@> Looping to run the MSE for all histories data...
-for(i in seq_along(Hists)) {
-    Hist <- Hists[[i]]
-    MSE <- Project(Hist, MPs = MPs, parallel = FALSE)
-    nm <- paste0("MSE", sprintf("%03d", i), "_IVInds", "_00.mse")
-    saveRDS(MSE, file.path("03_MSEs", nm))
-}
+# ######@> Loading history objects...
+# Hists <- sapply(dir("02_Hists", full.names = TRUE), readRDS)
+#
+# #####@> Setting names for Hists...
+# names(Hists) <- paste0("OM", sprintf("%03d", 1:27))
+#
+# ######@> Looping to run the MSE for all histories data...
+# for(i in seq_along(Hists)) {
+#     Hist <- Hists[[i]]
+#     MSE <- Project(Hist, MPs = MPs, parallel = FALSE)
+#     nm <- paste0("MSE", sprintf("%03d", i), "_IVInds", "_00.mse")
+#     saveRDS(MSE, file.path("03_MSEs", nm))
+# }
 
 ########################################################################
 ##

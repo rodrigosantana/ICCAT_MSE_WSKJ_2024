@@ -33,7 +33,7 @@ library(ggmse)
 ## Sys.getenv("Initial_MP_Yr")
 
 ####@> Old method...
-Initial_MP_Yr <- 2021
+Initial_MP_Yr <- 2025
 
 ######@> ggplot theme...
 extrafont::loadfonts(device = "postscript")
@@ -66,24 +66,51 @@ Catchdf <- data.frame(
     Year = 2021:2022,
     Catch = c(20048.21, 21377.24))
 
+Catchdf <- data.frame(
+  Year = 2021:2024,
+  Catch = c(20048.21, 21377.24, 20712.72, 20712.72))
+
 ######@> Loading history objects...
-Hists <- sapply(dir("../02_Hists", pattern = "ver02",
+Hists <- sapply(dir("02_Hists", pattern = "ver02",
     full.names = TRUE), readRDS)
 
 #####@> Setting names for Hists...
 names(Hists) <- paste0("OM", sprintf("%03d", 1:27))
 
+
 #####@> Data object that will be used in the first projection year...
 Data <- Hists[[5]]@Data
+
 
 #####@> Reference case Hists...
 HistsRF <- Hists[1:9]
 
 ######@> Loading default MPs...
-source("../03_script_prepare_MPs_ver00.R")
+source("03_script_prepare_MPs_ver00.R")
 
 ######@> Loading default PMs...
-source("../04_script_prepare_PMs_ver00.R")
+source("04_script_prepare_PMs_ver00.R")
+
+
+######@> Set Tune OM
+tuneOM <- 6
+Hist <- Hists[[tuneOM]]
+
+########################################################################
+######@> Testing Reference MPs
+MSE_ref <- Project(Hist, MPs = c("curEref",
+                                       "FMSYref",
+                                       'FMSYref75',
+                                       'FMSYref50'))
+
+PGK_long(MSE_ref)
+
+plot_projection_ts(MSE_ref, "SSB", bbmsy_zones = c(0.4, 0.8, 1))
+plot_projection_ts(MSE_ref, "FM", bbmsy_zones = c(0.4, 0.8, 1))
+plot_projection_ts(MSE_ref, "Catch", bbmsy_zones = c(0.4, 0.8, 1))
+
+PGK_long(MSE_ref)
+
 
 ########################################################################
 ######@> Tunning Empirical Index-Based MPs...
@@ -145,34 +172,85 @@ class(Iratio_MOD) <- "MP"
 
 ####@> tunepar = 1.03
 Iratio_MODA <- Iratio_MOD
-formals(Iratio_MODA)$tunepar <- 1.06
+formals(Iratio_MODA)$tunepar <- 0.95
 class(Iratio_MODA) <- "MP"
 
 ####@> tunepar = 1.025
 Iratio_MODB <- Iratio_MOD
-formals(Iratio_MODB)$tunepar <- 1.05
+formals(Iratio_MODB)$tunepar <- 0.9
 class(Iratio_MODB) <- "MP"
 
 ####@> tunepar = 1.02
 Iratio_MODC <- Iratio_MOD
-formals(Iratio_MODC)$tunepar <- 1.04
+formals(Iratio_MODC)$tunepar <- 0.85
 class(Iratio_MODC) <- "MP"
 
 ####@> tunepar = 1.015
 Iratio_MODD <- Iratio_MOD
-formals(Iratio_MODD)$tunepar <- 1.03
+formals(Iratio_MODD)$tunepar <- 0.8
 class(Iratio_MODD) <- "MP"
 
+
+
 ######@> Testing tuned MPs...
-MSE <- Project(Hists[[6]], MPs = c("Iratio_MOD", "Iratio_MODA", "Iratio_MODB",
-    "Iratio_MODC", "Iratio_MODD"))
+MSE_Iratio <- Project(Hist, MPs = c("Iratio_MOD",
+                                   "Iratio_MODA",
+                                   "Iratio_MODB",
+                                   "Iratio_MODC",
+                                   "Iratio_MODD"))
 
 #####@> Observing the results...
 
 ####@> Projections...
-plot_projection_ts(MSE, "SSB", bbmsy_zones = c(0.4, 0.8, 1))
-plot_projection_ts(MSE, "FM", bbmsy_zones = c(0.4, 0.8, 1))
-plot_projection_ts(MSE, "Catch", bbmsy_zones = c(0.4, 0.8, 1))
+PGK_long(MSE_Iratio)
+
+plot_projection_ts(MSE_Iratio, "SSB", bbmsy_zones = c(0.4, 0.8, 1))
+plot_projection_ts(MSE_Iratio, "FM", bbmsy_zones = c(0.4, 0.8, 1))
+plot_projection_ts(MSE_Iratio, "Catch", bbmsy_zones = c(0.4, 0.8, 1))
+
+# ----- check index & biomass -------
+
+Compare_Index <- function(MSE, sim=1, mp=1, ymax=4) {
+  b <- openMSE::get_Biomass(MSE) |> dplyr::filter(Sim==sim)
+  lastY <- b$Year[max(which(b$Period=='Historical'))]
+
+  mps <- unique(b$MP)
+  mps <- mps[!is.na(mps)]
+  b <- b |> dplyr::filter(MP%in% c(NA, mps[mp]))
+  Data <- MSE@PPD[[mp]]
+  index <- Data@Ind[sim,]
+  b$Index <- c(index, rep(NA, nrow(b)-length(index)))
+  match_years <- b |>
+    dplyr::filter(Period=='Historical', is.na(Index)==FALSE) |>
+    dplyr::select(Year)
+  b <- b |> dplyr::mutate(StBiomass=Value/mean(Value[Year%in%match_years$Year]),
+                          StIndex=Index/mean(Index[Year%in%match_years$Year]))
+
+  ylim <- 0
+  if (!is.null(ymax)) ylim <- c(0, ymax)
+  ggplot(b, aes(x=Year)) +
+    geom_line(aes(y=StBiomass), color='black') +
+    geom_line(aes(y=StIndex), color='blue') +
+    expand_limits(y=ylim) +
+    geom_vline(xintercept = lastY, linetype=3) +
+    theme_bw()
+}
+
+
+Compare_Index(MSE_Iratio, sim=1, mp=5)
+Compare_Index(MSE_Iratio, sim=2, mp=5)
+Compare_Index(MSE_Iratio, sim=3, mp=5)
+
+
+p_ind <- 70:99
+matplot(2025:2054, t(Hist@SampPars$Obs$Ierr_y[1:3,p_ind]),
+        type='b',
+        ylim=c(0, 3),
+        xlab='Year', ylab='Index Error (multiplicative)')
+abline(h=1, lty=3)
+
+
+
 
 ####@> Probability of being in a Green Quadrant...
 PGK_short(MSE)
@@ -254,20 +332,20 @@ formals(CE_01D)$tunepar <- 0.7
 class(CE_01D) <- "MP"
 
 ######@> Testing tuned MPs...
-MSE <- Project(Hists[[5]], MPs = c("CE_01", "CE_01A", "CE_01B",
-    "CE_01C", "CE_01D"))
+MSE_CE <- Project(Hist, MPs = c("CE_01", "CE_01A", "CE_01B",
+                                "CE_01C", "CE_01D"))
 
 #####@> Observing the results...
 
 ####@> Projections...
-plot_projection_ts(MSE, "SSB", bbmsy_zones = c(0.4, 0.8, 1))
-plot_projection_ts(MSE, "FM", bbmsy_zones = c(0.4, 0.8, 1))
-plot_projection_ts(MSE, "Catch", bbmsy_zones = c(0.4, 0.8, 1))
+plot_projection_ts(MSE_CE, "SSB", bbmsy_zones = c(0.4, 0.8, 1))
+plot_projection_ts(MSE_CE, "FM", bbmsy_zones = c(0.4, 0.8, 1))
+plot_projection_ts(MSE_CE, "Catch", bbmsy_zones = c(0.4, 0.8, 1))
 
 ####@> Probability of being in a Green Quadrant...
-PGK_long(MSE)
-PGK_short(MSE)
-PGK_med(MSE)
+PGK_long(MSE_CE)
+PGK_short(MSE_CE)
+PGK_med(MSE_CE)
 
 ########################################################################
 ##
