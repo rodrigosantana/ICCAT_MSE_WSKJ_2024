@@ -125,11 +125,11 @@ get_Find <- function(Hist) {
     scenario <- Hist@OM@Name
     sim <- dim(Hist@TSdata$Number)[1]
     df <- data.frame(
-        scenario = scenario,
+        scenario = gsub("OM ", "", scenario),
         year = year,
         sim = 1:sim,
         value = value,
-        variable = "F_FMSY",
+        variable = "Find",
         period = "Historical",
         model = "Model 1"
     )
@@ -149,7 +149,6 @@ get_Quantities02 <- function(Hists, variable = "SSB") {
             Hists,
             function(hist) {
                 cbind.data.frame(
-                    scenario = str_sub(hist@OM@Name, 4, 31),
                     temp02 = get_Find(hist)
                 )})
     }
@@ -349,159 +348,97 @@ Hists[[9]]@Ref$ByYear$SSBMSY[] <-
 ######@> Comparing values - Trajectories - I HAD STOPPED HERE...
 
 ######@> Quantities...
-tab02.SSB <- get_Quantities02(Hists, variable = "SSB")
+tab02.SSB <- get_Quantities02(Hists, variable = "SSB") %>%
+    left_join(ssbmsy, by = "scenario") %>%
+    mutate(SSB_SSBMSY = value/replist1)
 tab02.F <- get_Quantities02(Hists, variable = "F")
+tab02.F <- tab02.F %>%
+    left_join(fmsy, by = "scenario") %>%
+    mutate(F_FMSY = value/replist1)
 
+#####@> Average levels...
 tab02.SSBm <- tab02.SSB %>%
     group_by(scenario, year) %>%
-    summarise(ssb = mean(value, na.rm = TRUE))
-
+    summarise(SSB = mean(value, na.rm = TRUE),
+              SSB_SSBMSY = mean(SSB_SSBMSY, na.rm = TRUE))
 tab02.Fm <- tab02.F %>%
     group_by(scenario, year) %>%
-    summarise(f = mean(value, na.rm = TRUE))
+    summarise(F = mean(value, na.rm = TRUE),
+              F_FMSY = mean(F_FMSY, na.rm = TRUE))
 
 #####@> Figures...
 
-####@> MSY...
-temp <- tab01 %>%
-    left_join(msy, by = "scenario") %>%
-    select(scenario, "openMSE" = msy, "SS3" = replist1) %>%
-    pivot_longer(names_to = "Method", values_to = "MSY", 2:3)
+####@> SSB...
+p03 <- ggplot() +
+    geom_line(data = filter(ssb, Yr %in% 1952:2020),
+              aes(x = Yr, y = replist1, colour = "SS3",
+                  linetype = "SS3"),
+              linewidth = 1) +
+    geom_line(data = tab02.SSBm,
+              aes(x = year, y = SSB, colour = "openMSE",
+                  linetype = "openMSE"),
+              linewidth = 1) +
+    scale_colour_manual(values =
+                            c("SS3" = "red", "openMSE" = "black")) +
+    scale_linetype_manual(values =
+                              c("SS3" = "solid", "openMSE" = "dashed"))+
+    facet_wrap(~scenario) +
+    labs(x = "Year", y = "SSB", colour = "Method", linetype = "Method") +
+    my_theme()
+p03
 
-p00 <- ggplot(data = temp, aes(x = scenario, y = MSY, fill = Method)) +
-    geom_bar(stat = "identity", position = "dodge", colour = "black",
-             alpha = 0.8) +
-    labs(x = "Uncertainty grid scenario", y = "MSY") +
-    scale_y_continuous(expand = c(0, 0), limits = c(0, 60000)) +
-    scale_fill_grey() +
-    my_theme() +
-    theme(legend.position = "none") +
-    coord_flip()
-p00
+####@> SSB_SSBMSY...
+p04 <- ggplot() +
+    geom_line(data = filter(ssb_ssbmsy, Year %in% 1952:2020),
+              aes(x = Year, y = stock, colour = "SS3",
+                  linetype = "SS3"),
+              linewidth = 1) +
+    geom_line(data = tab02.SSBm,
+              aes(x = year, y = SSB_SSBMSY, colour = "openMSE",
+                  linetype = "openMSE"),
+              linewidth = 1) +
+    scale_colour_manual(values =
+                            c("SS3" = "red", "openMSE" = "black")) +
+    scale_linetype_manual(values =
+                              c("SS3" = "solid", "openMSE" = "dashed"))+
+    facet_wrap(~scenario) +
+    labs(x = "Year", y = expression(SSB/SSB[MSY]),
+         colour = "Method", linetype = "Method") +
+    my_theme()
+p04
 
-####@> F_MSY...
-temp <- tab01 %>%
-    left_join(fmsy, by = "scenario") %>%
-    select(scenario, "openMSE" = fmsy, "SS3" = replist1) %>%
-    pivot_longer(names_to = "Method", values_to = "FMSY", 2:3)
-
-p01 <- ggplot(data = temp, aes(x = scenario, y = FMSY, fill = Method)) +
-    geom_bar(stat = "identity", position = "dodge", colour = "black",
-             alpha = 0.8) +
-    labs(x = "", y = expression(F[MSY])) +
-    scale_y_continuous(expand = c(0, 0), limits = c(0, 1.3)) +
-    scale_fill_grey() +
-    my_theme() +
-    theme(legend.position = "none") +
-    coord_flip()
-p01
-
-####@> SSB_MSY...
-temp <- tab01 %>%
-    left_join(ssbmsy, by = "scenario") %>%
-    select(scenario, "openMSE" = ssbmsy, "SS3" = replist1) %>%
-    pivot_longer(names_to = "Method", values_to = "SSBMSY", 2:3)
-
-p02 <- ggplot(data = temp, aes(x = scenario, y = SSBMSY, fill = Method)) +
-    geom_bar(stat = "identity", position = "dodge", colour = "black",
-             alpha = 0.8) +
-    labs(x = "", y = expression(SSB[MSY])) +
-    scale_y_continuous(expand = c(0, 0), limits = c(0, 120000)) +
-    scale_fill_grey() +
-    my_theme() +
-    coord_flip()
-p02
+####@> F_FMSY...
+p05 <- ggplot() +
+    geom_line(data = filter(ffmsy, Yr %in% 1952:2020),
+              aes(x = Yr, y = replist1, colour = "SS3",
+                  linetype = "SS3"),
+              linewidth = 1) +
+    geom_line(data = tab02.Fm,
+              aes(x = year, y = F_FMSY, colour = "openMSE",
+                  linetype = "openMSE"),
+              linewidth = 1) +
+    scale_colour_manual(values =
+                            c("SS3" = "red", "openMSE" = "black")) +
+    scale_linetype_manual(values =
+                              c("SS3" = "solid", "openMSE" = "dashed"))+
+    facet_wrap(~scenario) +
+    labs(x = "Year", y = expression(F/F[MSY]),
+         colour = "Method", linetype = "Method") +
+    my_theme()
+p05
 
 #####@> Saving figures...
-plot00 <- p00 | p01 | p02
-ggsave("05_Results/Comp_Ref_Quantities_ver00.png", plot = plot00,
-       device = "png", units = "cm", w = 55, h = 25, dpi = 300,
+ggsave("05_Results/Comp_SSB_Quantities_ver00.png", plot = p03,
+       device = "png", units = "cm", w = 35, h = 30, dpi = 300,
        bg = "white")
 
-#####@> Replacing the values...
+ggsave("05_Results/Comp_SSB_SSBMSY_Quantities_ver00.png", plot = p04,
+       device = "png", units = "cm", w = 35, h = 30, dpi = 300,
+       bg = "white")
 
-####@> OM001...
-Hists[[1]]@OM@Name
-Hists[[1]]@Ref$ByYear$MSY[] <-
-    msy$replist1[msy$scenario == "WSKJ_EstRec93_Qnt25_h6"]
-Hists[[1]]@Ref$ByYear$FMSY[] <-
-    fmsy$replist1[fmsy$scenario == "WSKJ_EstRec93_Qnt25_h6"]
-Hists[[1]]@Ref$ByYear$SSBMSY[] <-
-    ssbmsy$replist1[ssbmsy$scenario == "WSKJ_EstRec93_Qnt25_h6"]
-
-####@> OM002...
-Hists[[2]]@OM@Name
-Hists[[2]]@Ref$ByYear$MSY[] <-
-    msy$replist1[msy$scenario == "WSKJ_EstRec93_Qnt50_h6"]
-Hists[[2]]@Ref$ByYear$FMSY[] <-
-    fmsy$replist1[fmsy$scenario == "WSKJ_EstRec93_Qnt50_h6"]
-Hists[[2]]@Ref$ByYear$SSBMSY[] <-
-    ssbmsy$replist1[ssbmsy$scenario == "WSKJ_EstRec93_Qnt50_h6"]
-
-####@> OM003...
-Hists[[3]]@OM@Name
-Hists[[3]]@Ref$ByYear$MSY[] <-
-    msy$replist1[msy$scenario == "WSKJ_EstRec93_Qnt75_h6"]
-Hists[[3]]@Ref$ByYear$FMSY[] <-
-    fmsy$replist1[fmsy$scenario == "WSKJ_EstRec93_Qnt75_h6"]
-Hists[[3]]@Ref$ByYear$SSBMSY[] <-
-    ssbmsy$replist1[ssbmsy$scenario == "WSKJ_EstRec93_Qnt75_h6"]
-
-####@> OM004...
-Hists[[4]]@OM@Name
-Hists[[4]]@Ref$ByYear$MSY[] <-
-    msy$replist1[msy$scenario == "WSKJ_EstRec93_Qnt25_h7"]
-Hists[[4]]@Ref$ByYear$FMSY[] <-
-    fmsy$replist1[fmsy$scenario == "WSKJ_EstRec93_Qnt25_h7"]
-Hists[[4]]@Ref$ByYear$SSBMSY[] <-
-    ssbmsy$replist1[ssbmsy$scenario == "WSKJ_EstRec93_Qnt25_h7"]
-
-####@> OM005...
-Hists[[5]]@OM@Name
-Hists[[5]]@Ref$ByYear$MSY[] <-
-    msy$replist1[msy$scenario == "WSKJ_EstRec93_Qnt50_h7"]
-Hists[[5]]@Ref$ByYear$FMSY[] <-
-    fmsy$replist1[fmsy$scenario == "WSKJ_EstRec93_Qnt50_h7"]
-Hists[[5]]@Ref$ByYear$SSBMSY[] <-
-    ssbmsy$replist1[ssbmsy$scenario == "WSKJ_EstRec93_Qnt50_h7"]
-
-####@> OM006...
-Hists[[6]]@OM@Name
-Hists[[6]]@Ref$ByYear$MSY[] <-
-    msy$replist1[msy$scenario == "WSKJ_EstRec93_Qnt75_h7"]
-Hists[[6]]@Ref$ByYear$FMSY[] <-
-    fmsy$replist1[fmsy$scenario == "WSKJ_EstRec93_Qnt75_h7"]
-Hists[[6]]@Ref$ByYear$SSBMSY[] <-
-    ssbmsy$replist1[ssbmsy$scenario == "WSKJ_EstRec93_Qnt75_h7"]
-
-####@> OM007...
-Hists[[7]]@OM@Name
-Hists[[7]]@Ref$ByYear$MSY[] <-
-    msy$replist1[msy$scenario == "WSKJ_EstRec93_Qnt25_h8"]
-Hists[[7]]@Ref$ByYear$FMSY[] <-
-    fmsy$replist1[fmsy$scenario == "WSKJ_EstRec93_Qnt25_h8"]
-Hists[[7]]@Ref$ByYear$SSBMSY[] <-
-    ssbmsy$replist1[ssbmsy$scenario == "WSKJ_EstRec93_Qnt25_h8"]
-
-####@> OM008...
-Hists[[8]]@OM@Name
-Hists[[8]]@Ref$ByYear$MSY[] <-
-    msy$replist1[msy$scenario == "WSKJ_EstRec93_Qnt50_h8"]
-Hists[[8]]@Ref$ByYear$FMSY[] <-
-    fmsy$replist1[fmsy$scenario == "WSKJ_EstRec93_Qnt50_h8"]
-Hists[[8]]@Ref$ByYear$SSBMSY[] <-
-    ssbmsy$replist1[ssbmsy$scenario == "WSKJ_EstRec93_Qnt50_h8"]
-
-####@> OM009...
-Hists[[9]]@OM@Name
-Hists[[9]]@Ref$ByYear$MSY[] <-
-    msy$replist1[msy$scenario == "WSKJ_EstRec93_Qnt75_h8"]
-Hists[[9]]@Ref$ByYear$FMSY[] <-
-    fmsy$replist1[fmsy$scenario == "WSKJ_EstRec93_Qnt75_h8"]
-Hists[[9]]@Ref$ByYear$SSBMSY[] <-
-    ssbmsy$replist1[ssbmsy$scenario == "WSKJ_EstRec93_Qnt75_h8"]
-
-
+ggsave("05_Results/Comp_F_FMSY_Quantities_ver00.png", plot = p05,
+       device = "png", units = "cm", w = 35, h = 30, dpi = 300,
+       bg = "white")
 
 ########################################################################
 ##
