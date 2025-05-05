@@ -218,6 +218,14 @@ ssb_ssbmsy <- ssb %>%
     select("Year" = Yr.x, scenario, "SSB" = replist1.x,
            "SSB_MSY" = replist1.y, stock)
 
+####@> Catches...
+catch <- SS01$catch %>%
+    group_by(Yr) %>%
+    summarise(Obs = sum(Obs)) %>%
+    filter(Yr %in% 1952:2020) %>%
+    select("Year" = Yr, Obs) %>%
+    mutate(Half = Obs/2)
+
 ######@> Loading T1NC from ICCAT...
 
 #####@> Download file...
@@ -1086,6 +1094,9 @@ save.image("06_Basement/Index_Evaluation_ver02.RData")
 ######@> Exporting reference quantities...
 save(msy, ssb, ssbmsy, ssb_ssbmsy, fmsy, ffmsy,
      file = "05_Results/Reference_Quantities_ver02.RData")
+
+######@> Exporting catches...
+save(catch, file = "05_Results/Reference_Catches_ver02.RData")
 
 ########################################################################
 ##
