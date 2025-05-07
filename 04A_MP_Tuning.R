@@ -28,7 +28,7 @@ optPGK60_4_10 <- function(MSE_list) {
 # Custom Tuning Function 
 DoMPTune <- function(HistList, 
                      MPName, 
-                     TuneInterval=c(0.5, 1.5),
+                     TuneInterval=c(0.2, 2),
                      TuneFunction=optPGK60_4_10,
                      Data_Lag=1, 
                      ManagementInterval=3, 
@@ -47,17 +47,29 @@ DoMPTune <- function(HistList,
                               parallel=parallel)
   
   dirName <- paste0('DataLag_', Data_Lag, '_Interval_', ManagementInterval)
+  
   if (!dir.exists(file.path('TunedMPs', dirName)))
     dir.create(file.path('TunedMPs', dirName))
   
   filename <- paste0(MPName, '.mp')
-  
-  saveRDS(tunedMP, file.path('TunedMPs', dirName, filename)
+  saveRDS(tunedMP, file.path('TunedMPs', dirName, filename))
   
 }
 
+
+setup() # setup parallel processing 
+
+snowfall::sfExport(list=c('FixedTAC',
+                          'SameTAC',
+                          'adjust_TAC',
+                          'adjust_TAC2')
+                   )
 # ----- IR MPs ---------
 IR_MPs <- c("IR_01", "IR_02", "IR_03")
+
+for (mp in IR_MPs) {
+  DoMPTune(HistList, mp, parallel=FALSE)
+}
 
 
 # ----- CE MPs ---------
