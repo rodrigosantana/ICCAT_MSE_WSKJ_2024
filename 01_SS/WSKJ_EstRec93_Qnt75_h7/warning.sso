@@ -10,5 +10,4 @@ This file contains warnings, suggestions and notes generated as files are read a
 1 Forecast=0 or -1, so rest of forecast file will not be read and can be omitted;
 1 A one year forecast using recent F will be done automatically
 2 bias adjustment ramp extends into forecast; biasadj set to 0.0 internally for forecast years
-3 1st iteration warning: catch logL > 50% total logL; check configuration; suggest start with larger R0
-N warnings: 3
+N warnings: 2

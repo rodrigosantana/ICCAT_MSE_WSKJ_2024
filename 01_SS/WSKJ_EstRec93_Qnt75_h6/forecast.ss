@@ -8,13 +8,13 @@
 0.4 #_SPRtarget
 0.4 #_Btarget
 #_Bmark_years: beg_bio, end_bio, beg_selex, end_selex, beg_relF, end_relF,  beg_recr_dist, end_recr_dist, beg_SRparm, end_SRparm (enter actual year, or values of 0 or -integer to be rel. endyr)
- 2018 2020 2018 2020 2018 2020 1952 2018 1952 2018
+ 2021 2023 2021 2023 2021 2023 1952 2021 1952 2021
 1 #_Bmark_relF_Basis
 0 #_Forecast
 1 #_Nforecastyrs
 1 #_F_scalar
 #_Fcast_years:  beg_selex, end_selex, beg_relF, end_relF, beg_recruits, end_recruits (enter actual year, or values of 0 or -integer to be rel. endyr)
-2018 2020 2018 2020 -999 0
+2021 2023 2021 2023 -999 0
 0 # Forecast selectivity (0=fcast selex is mean from year range; 1=fcast selectivity from annual time-vary parms)
 2 # Control rule method (1: ramp does catch=f(SSB), buffer on F; 2: ramp does F=f(SSB), buffer on F; 3: ramp does catch=f(SSB), buffer on catch; 4: ramp does F=f(SSB), buffer on catch) 
 0.001 # Control rule Biomass level for constant F (as frac of Bzero, e.g. 0.40); (Must be > the no F level below) 
