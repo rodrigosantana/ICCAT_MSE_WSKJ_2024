@@ -36,9 +36,6 @@ library(tidyverse)
 ######@> Creating catch data.frame for the recent years...
 # TODO - update 2024 catch to observed value
 
-# defined on line 105 on 01_script_import_SS3_ver00.R
-Catchdf <- read("CatchDF.rda")
-
 ######@> Creating index data.frame for the recent years...
 # No longer needed 
 

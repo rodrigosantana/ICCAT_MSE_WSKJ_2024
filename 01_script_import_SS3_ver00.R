@@ -106,7 +106,7 @@ load("05_Results/tsIndex_ver03.RData")
 
 ######@> Loading extracted quantities (ie. MSY, SSB_MSY, F_MSY) from the
 ######@> Stock Assessment and catches from T1NC for the recent year...
-load("05_Results/Reference_Quantities_ver03.RData")
+# load("05_Results/Reference_Quantities_ver03.RData")
 
 ########################################################################
 ######@> Importing OMs...
@@ -135,14 +135,11 @@ for (sl in slots_to_copy) {
     slot(WSKJ_Data, sl) <- slot(OM1.Data, sl)
 }
 
+
+
 ####@> Inverse-variance weighted index manually added..
-ObsDataYears <- 1952:2024
-
-WSKJ_Data@Year <- ObsDataYears 
-
 tsIndex <- tsIndex |> dplyr::filter(Fleet=='Inverse variance weighted')
-NAyears <- length(ObsDataYears[1]:(tsIndex$Year[1]-1))
-
+NAyears <- length(WSKJ_Data@Year[1]:(tsIndex$Year[1]-1))
 index <- c(rep(NA, NAyears), tsIndex$Obs)
 index <- index/mean(index, na.rm = TRUE)
 names(index) <- seq(1952, by=1, length.out=length(index))
@@ -152,18 +149,12 @@ names(cv_index) <- OM1.Data@Year
 WSKJ_Data@Ind <- array(index, dim = c(1, length(index)))
 WSKJ_Data@CV_Ind <- array(cv_index, dim = c(1, length(index)))
 
-# TODO - update 2024 catch to observed value
-Catchdf <- data.frame(
-  Year = 2021:2024,
-  Catch = c(20257.18, 21629.20, 29588.25, 23824.88))
+data.frame(Year=WSKJ_Data@Year,
+           Index=WSKJ_Data@Ind[1,],
+           Catch=WSKJ_Data@Cat[1,])
 
-saveRDS(Catchdf, "CatchDF.rda")
-
-catches <- c(WSKJ_Data@Cat[1, ], Catchdf$Catch)
-cv_catches <- c(WSKJ_Data@CV_Cat,rep(0.2, length(Catchdf$Year)))
-WSKJ_Data@Cat <- array(catches, dim = c(1, length(catches)))
-WSKJ_Data@CV_Cat <- array(cv_catches, dim = c(1, length(cv_catches)))
-
+WSKJ_Data@MPrec <- rep(tail(WSKJ_Data@Cat[1,],1), nsim)
+saveRDS(WSKJ_Data, "WSKJ_Data.rda")
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt25_h6...

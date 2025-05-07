@@ -11,3 +11,4 @@ pak::pkg_install("blue-matter/openMSE")
 pak::pkg_install("ICCAT/nswo-mse")
 
 
+pak::pkg_install("r4ss/r4ss")

@@ -20,7 +20,6 @@
 ######@> Setup R...
 
 ######@> Update openMSE R packages...
-######@> Update openMSE R packages...
 source("000_load_openMSE_packages.R")
 
 ######@> Loading R packages...
@@ -100,6 +99,8 @@ for(i in seq_along(OM_Objects)) {
   nm <- paste0(OM_Objects[i], "_IVInds_ver02", ".hist")
   saveRDS(Hist, file.path("03_Hists", nm))
 }
+saveRDS(HistList, "03_Hists/HistList.rda")
+
 
 ######@> Examine Recruitment Deviations
 sims <- sample(1:100, 3) # random 3 simulations
@@ -119,14 +120,9 @@ for (i in 1:9) {
 ######@> Check openMSE vs SS3 reference points
 
 compareRefs <- function() {
-  Histfiles <- list.files("03_Hists")
+  HistList <- readRDS("03_Hists/HistList.rda")
 
-  ReplistList <- HistList <- list()
-  for (i in seq_along(Histfiles)) {
-    message("Reading Hist ", i)
-    HistList[[i]] <- readRDS(file.path('03_Hists', Histfiles[[i]]))
-  }
-  
+  ReplistList  <- list()
   SSdirs <- list.dirs("01_SS", recursive = FALSE, full.names = TRUE)
 
   DFList <- list()
