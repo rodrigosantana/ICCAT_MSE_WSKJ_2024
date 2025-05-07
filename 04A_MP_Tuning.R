@@ -1,13 +1,13 @@
+
+# Update to latest Github versions
 source("000_load_openMSE_packages.R")
 
 library(openMSE)
-
 
 # Source pre-tuned MPs
 source("03A_Define_MPs.R")
 
 # Load Hist files
-
 HistList <- readRDS("03_Hists/HistList.rda")
 
 
@@ -35,6 +35,7 @@ DoMPTune <- function(HistList,
                      Data_Lag=1, 
                      ManagementInterval=3, 
                      Initial_MP_Yr=2026,
+                     tol=1E-3,
                      parallel=FALSE) {
   
   tuneMP <- get(MPName)
@@ -43,9 +44,12 @@ DoMPTune <- function(HistList,
   formals(tuneMP)$Initial_MP_Yr <- Initial_MP_Yr 
   class(tuneMP) <- 'MP'
   
-  tunedMP <- MSEtool::tune_MP(HistList, "tuneMP", MP_parname='tunepar', TuneInterval,
-                              TuneFunction, 
-                              tol=1E-3, 
+  assign(MPName, tuneMP, envir=.GlobalEnv)
+  
+  tunedMP <- MSEtool::tune_MP(HistList, MP=MPName, MP_parname='tunepar',
+                              interval=TuneInterval,
+                              minfunc=TuneFunction, 
+                              tol=tol, 
                               parallel=parallel)
   
   dirName <- paste0('DataLag_', Data_Lag, '_Interval_', ManagementInterval)
@@ -60,13 +64,15 @@ DoMPTune <- function(HistList,
 
 
 # not working for some reason
-# setup() # setup parallel processing 
+# setup() # setup parallel processing
 # 
 # snowfall::sfExport(list=c('FixedTAC',
 #                           'SameTAC',
 #                           'adjust_TAC',
 #                           'adjust_TAC2')
-                   )
+#                    )
+
+
 # ----- IR MPs ---------
 IR_MPs <- c("IR_01", "IR_02", "IR_03")
 

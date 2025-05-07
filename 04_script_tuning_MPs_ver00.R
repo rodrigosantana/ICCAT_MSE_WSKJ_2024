@@ -41,10 +41,10 @@ library(snowfall)
 Catchdf <- read("CatchDF.rda")
 
 ######@> Creating index data.frame for the recent years...
-load("05_Results/tsIndex_ver02.RData")
-Cpuedf <- tsIndex %>%
-    filter(Year %in% 2021:2022,
-           Fleet == "Inverse variance weighted average")
+# load("05_Results/tsIndex_ver02.RData")
+# Cpuedf <- tsIndex %>%
+#     filter(Year %in% 2021:2022,
+#            Fleet == "Inverse variance weighted average")
 
 ######@> Loading one historical scenario for testing...
 Hist05 <- readRDS("03_Hists/OM005_IVInds_ver02.hist")
