@@ -157,6 +157,8 @@ Catchdf <- data.frame(
   Year = 2021:2024,
   Catch = c(20257.18, 21629.20, 29588.25, 23824.88))
 
+saveRDS(Catchdf, "CatchDF.rda")
+
 catches <- c(WSKJ_Data@Cat[1, ], Catchdf$Catch)
 cv_catches <- c(WSKJ_Data@CV_Cat,rep(0.2, length(Catchdf$Year)))
 WSKJ_Data@Cat <- array(catches, dim = c(1, length(catches)))
