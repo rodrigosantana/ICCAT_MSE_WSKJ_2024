@@ -34,18 +34,21 @@ library(tidyverse)
 ## Initial_MP_Yr <- 2025
 
 ######@> Creating catch data.frame for the recent years...
-Catchdf <- data.frame(
-    Year = 2021:2022,
-    Catch = c(20048.21, 21377.24))
+# TODO - update 2024 catch to observed value
+
+# defined on line 105 on 01_script_import_SS3_ver00.R
+Catchdf <- read("CatchDF.rda")
 
 ######@> Creating index data.frame for the recent years...
-load("05_Results/tsIndex_ver02.RData")
-Cpuedf <- tsIndex %>%
-    filter(Year %in% 2021:2022,
-           Fleet == "Inverse variance weighted average")
+# No longer needed 
+
+# load("05_Results/tsIndex_ver02.RData")
+# Cpuedf <- tsIndex %>%
+#     filter(Year %in% 2021:2022,
+#            Fleet == "Inverse variance weighted average")
 
 ######@> Loading one historical scenario for testing...
-Hist05 <- readRDS("03_Hists/OM005_IVInds_CORRECTED_ver03.hist")
+Hist05 <- readRDS("03_Hists/OM005_IVInds_ver02.hist")
 
 #####@> Extract Data for testing MPs...
 Data <- Hist05@Data
@@ -81,6 +84,17 @@ adjust_TAC2 <- function(TAC, Last_TAC, mc, B_rel) {
     return(Last_TAC * delta_TAC)
 }
 
+
+# copied from SWOMSE::FixedTAC
+FixedTAC <- function (Rec, Data) {
+  df <- Catchdf
+  if ((max(Data@Year) + 1) %in% df$Year) {
+    ind <- match(max(Data@Year) + 1, df$Year)
+    Rec@TAC <- df$Catch[ind]
+  }
+  Rec
+}
+
 ########################################################################
 ######@> Management Procedures...
 
@@ -92,7 +106,7 @@ CC_40kt <- function(x, Data, Data_Lag = 2, Interval = 3,
     ## ie data_year will be 2020 in projection year 2021
     data_year <- max(Data@Year)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data) ## use actual catches if they are
+        Rec <- FixedTAC(Rec, Data) ## use actual catches if they are
         ## available
         ## return(Rec)
     } else {
@@ -110,7 +124,7 @@ CC_30kt <- function(x, Data, Data_Lag = 2, Interval = 3,
     ## ie data_year will be 2020 in projection year 2021
     data_year <- max(Data@Year)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data)
+        Rec <- FixedTAC(Rec, Data)
         return(Rec)
     } else {
         Rec@TAC <- rep(3e4, reps)
@@ -126,7 +140,7 @@ CC_20kt <- function(x, Data, Data_Lag = 2, Interval = 3,
     ## ie data_year will be 2020 in projection year 2021
     data_year <- max(Data@Year)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data)
+        Rec <- FixedTAC(Rec, Data)
         return(Rec)
     } else {
         Rec@TAC <- rep(25e3, reps)
@@ -167,11 +181,11 @@ IR_01 <- function(x, Data, Interval = 3, Data_Lag = 2,
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data)
+        Rec <- FixedTAC(Rec, Data)
         return(Rec)
-    ## if(SWOMSE::SameTAC(Initial_MP_Yr, Interval, Data)) {
+    ## if(SameTAC(Initial_MP_Yr, Interval, Data)) {
     ##     Rec@TAC <- Data@MPrec[x]
-    ##     Rec <- SWOMSE::FixedTAC(Rec, Data)
+    ##     Rec <- FixedTAC(Rec, Data)
     ##     return(Rec)
     } else {
         ## Including new index values for the recent year...
@@ -233,11 +247,11 @@ IR_02 <- function(x, Data, Interval = 3, Data_Lag = 2,
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data)
+        Rec <- FixedTAC(Rec, Data)
         return(Rec)
-    ## if(SWOMSE::SameTAC(Initial_MP_Yr, Interval, Data)) {
+    ## if(SameTAC(Initial_MP_Yr, Interval, Data)) {
     ##     Rec@TAC <- Data@MPrec[x]
-    ##     Rec <- SWOMSE::FixedTAC(Rec, Data)
+    ##     Rec <- FixedTAC(Rec, Data)
     ##     return(Rec)
     } else {
         ## Including new index values for the recent year...
@@ -299,11 +313,11 @@ IR_03 <- function(x, Data, Interval = 3, Data_Lag = 2,
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data)
+        Rec <- FixedTAC(Rec, Data)
         return(Rec)
-    ## if(SWOMSE::SameTAC(Initial_MP_Yr, Interval, Data)) {
+    ## if(SameTAC(Initial_MP_Yr, Interval, Data)) {
     ##     Rec@TAC <- Data@MPrec[x]
-    ##     Rec <- SWOMSE::FixedTAC(Rec, Data)
+    ##     Rec <- FixedTAC(Rec, Data)
     ##     return(Rec)
     } else {
         ## Including new index values for the recent year...
@@ -365,11 +379,11 @@ CE_01 <- function(x, Data, Data_Lag = 2, Interval = 3, tunepar = 1.792558,
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data)
+        Rec <- FixedTAC(Rec, Data)
         return(Rec)
-    ## if(SWOMSE::SameTAC(Initial_MP_Yr, Interval, Data)) {
+    ## if(SameTAC(Initial_MP_Yr, Interval, Data)) {
     ##     Rec@TAC <- Data@MPrec[x]
-    ##     Rec <- SWOMSE::FixedTAC(Rec, Data)
+    ##     Rec <- FixedTAC(Rec, Data)
     ##     return(Rec)
     } else {
         ## Including new index values for the recent year...
@@ -430,11 +444,11 @@ CE_02 <- function(x, Data, Data_Lag = 2, Interval = 3, tunepar = 1.792558,
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data)
+        Rec <- FixedTAC(Rec, Data)
         return(Rec)
-    ## if(SWOMSE::SameTAC(Initial_MP_Yr, Interval, Data)) {
+    ## if(SameTAC(Initial_MP_Yr, Interval, Data)) {
     ##     Rec@TAC <- Data@MPrec[x]
-    ##     Rec <- SWOMSE::FixedTAC(Rec, Data)
+    ##     Rec <- FixedTAC(Rec, Data)
     ##     return(Rec)
     } else {
         ## Including new index values for the recent year...
@@ -495,11 +509,11 @@ CE_03 <- function(x, Data, Data_Lag = 2, Interval = 3, tunepar = 1.792558,
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data)
+        Rec <- FixedTAC(Rec, Data)
         return(Rec)
-    ## if(SWOMSE::SameTAC(Initial_MP_Yr, Interval, Data)) {
+    ## if(SameTAC(Initial_MP_Yr, Interval, Data)) {
     ##     Rec@TAC <- Data@MPrec[x]
-    ##     Rec <- SWOMSE::FixedTAC(Rec, Data)
+    ##     Rec <- FixedTAC(Rec, Data)
     ##     return(Rec)
     } else {
         ## Including new index values for the recent year...
@@ -559,11 +573,11 @@ IS_01 <- function(x, Data, Interval = 3, Data_Lag = 2,
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data)
+        Rec <- FixedTAC(Rec, Data)
         return(Rec)
-    ## if(SWOMSE::SameTAC(Initial_MP_Yr, Interval, Data)) {
+    ## if(SameTAC(Initial_MP_Yr, Interval, Data)) {
     ##     Rec@TAC <- Data@MPrec[x]
-    ##     Rec <- SWOMSE::FixedTAC(Rec, Data)
+    ##     Rec <- FixedTAC(Rec, Data)
     ##     return(Rec)
     } else {
         ## Including new index values for the recent year...
@@ -622,11 +636,11 @@ IS_02 <- function(x, Data, Interval = 3, Data_Lag = 2,
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data)
+        Rec <- FixedTAC(Rec, Data)
         return(Rec)
-    ## if(SWOMSE::SameTAC(Initial_MP_Yr, Interval, Data)) {
+    ## if(SameTAC(Initial_MP_Yr, Interval, Data)) {
     ##     Rec@TAC <- Data@MPrec[x]
-    ##     Rec <- SWOMSE::FixedTAC(Rec, Data)
+    ##     Rec <- FixedTAC(Rec, Data)
     ##     return(Rec)
     } else {
         ## Including new index values for the recent year...
@@ -685,11 +699,11 @@ IS_03 <- function(x, Data, Interval = 3, Data_Lag = 2,
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data)
+        Rec <- FixedTAC(Rec, Data)
         return(Rec)
-    ## if(SWOMSE::SameTAC(Initial_MP_Yr, Interval, Data)) {
+    ## if(SameTAC(Initial_MP_Yr, Interval, Data)) {
     ##     Rec@TAC <- Data@MPrec[x]
-    ##     Rec <- SWOMSE::FixedTAC(Rec, Data)
+    ##     Rec <- FixedTAC(Rec, Data)
     ##     return(Rec)
     } else {
         ## Including new index values for the recent year...
@@ -748,7 +762,7 @@ class(IS_03) <- "MP"
 ##     ## Does TAC need to be updated? (or set a fixed catch if before
 ##     ## Initial_MP_Yr)
 ##     if(data_year < max(Catchdf$Year)) {
-##         Rec <- SWOMSE::FixedTAC(Rec, Data)
+##         Rec <- FixedTAC(Rec, Data)
 ##         return(Rec)
 ##     } else {
 ##         ## Including new index values for the recent year...
@@ -803,7 +817,7 @@ class(IS_03) <- "MP"
 ##     ## Does TAC need to be updated? (or set a fixed catch if before
 ##     ## Initial_MP_Yr)
 ##     if(data_year < max(Catchdf$Year)) {
-##         Rec <- SWOMSE::FixedTAC(Rec, Data)
+##         Rec <- FixedTAC(Rec, Data)
 ##         return(Rec)
 ##     } else {
 ##         ## Including new index values for the recent year...
@@ -858,7 +872,7 @@ class(IS_03) <- "MP"
 ##     ## Does TAC need to be updated? (or set a fixed catch if before
 ##     ## Initial_MP_Yr)
 ##     if(data_year < max(Catchdf$Year)) {
-##         Rec <- SWOMSE::FixedTAC(Rec, Data)
+##         Rec <- FixedTAC(Rec, Data)
 ##         return(Rec)
 ##     } else {
 ##         ## Including new index values for the recent year...
@@ -915,11 +929,11 @@ SP_01 <- function(x, Data, Interval = 3, Data_Lag = 2,
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data)
+        Rec <- FixedTAC(Rec, Data)
         return(Rec)
-    ## if(SWOMSE::SameTAC(Initial_MP_Yr, Interval, Data)) {
+    ## if(SameTAC(Initial_MP_Yr, Interval, Data)) {
     ##     Rec@TAC <- Data@MPrec[x]
-    ##     Rec <- SWOMSE::FixedTAC(Rec, Data)
+    ##     Rec <- FixedTAC(Rec, Data)
     ##     return(Rec)
     } else {
         ## Including new index values for the recent year...
@@ -985,11 +999,11 @@ SP_02 <- function(x, Data, Interval = 3, Data_Lag = 2,
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data)
+        Rec <- FixedTAC(Rec, Data)
         return(Rec)
-    ## if(SWOMSE::SameTAC(Initial_MP_Yr, Interval, Data)) {
+    ## if(SameTAC(Initial_MP_Yr, Interval, Data)) {
     ##     Rec@TAC <- Data@MPrec[x]
-    ##     Rec <- SWOMSE::FixedTAC(Rec, Data)
+    ##     Rec <- FixedTAC(Rec, Data)
     ##     return(Rec)
     } else {
         ## Including new index values for the recent year...
@@ -1058,11 +1072,11 @@ SP_03 <- function(x, Data, Interval = 3, Data_Lag = 2,
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data)
+        Rec <- FixedTAC(Rec, Data)
         return(Rec)
-    ## if(SWOMSE::SameTAC(Initial_MP_Yr, Interval, Data)) {
+    ## if(SameTAC(Initial_MP_Yr, Interval, Data)) {
     ##     Rec@TAC <- Data@MPrec[x]
-    ##     Rec <- SWOMSE::FixedTAC(Rec, Data)
+    ##     Rec <- FixedTAC(Rec, Data)
     ##     return(Rec)
     } else {
         ## Including new index values for the recent year...
@@ -1129,11 +1143,11 @@ SP_04 <- function(x, Data, Interval = 3, Data_Lag = 2,
     ## Does TAC need to be updated? (or set a fixed catch if before
     ## Initial_MP_Yr)
     if(data_year < max(Catchdf$Year)) {
-        Rec <- SWOMSE::FixedTAC(Rec, Data)
+        Rec <- FixedTAC(Rec, Data)
         return(Rec)
-    ## if(SWOMSE::SameTAC(Initial_MP_Yr, Interval, Data)) {
+    ## if(SameTAC(Initial_MP_Yr, Interval, Data)) {
     ##     Rec@TAC <- Data@MPrec[x]
-    ##     Rec <- SWOMSE::FixedTAC(Rec, Data)
+    ##     Rec <- FixedTAC(Rec, Data)
     ##     return(Rec)
     } else {
         ## Including new index values for the recent year...
@@ -1202,7 +1216,7 @@ class(SP_04) <- "MP"
 ##     ## Does TAC need to be updated? (or set a fixed catch if before
 ##     ## Initial_MP_Yr)
 ##     if(data_year < max(Catchdf$Year)) {
-##         Rec <- SWOMSE::FixedTAC(Rec, Data)
+##         Rec <- FixedTAC(Rec, Data)
 ##         return(Rec)
 ##     } else {
 ##         ## Including new index values for the recent year...

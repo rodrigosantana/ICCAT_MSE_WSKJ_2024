@@ -20,34 +20,10 @@
 ######@> Setup R...
 
 ######@> Update openMSE R packages...
+source("000_load_openMSE_packages.R") # will update openMSE packages if there are updates on GitHub
 
-#####@> MSEtool (3.7.2)...
-if(packageVersion("MSEtool") == "3.7.2") {
-    print("MSEtool R package already installed is the correct version")
-} else {
-    pak::pkg_install("blue-matter/MSEtool")
-}
-
-#####@> SAMtool (1.7.0)...
-if(packageVersion("SAMtool") == "1.7.0") {
-    print("SAMtool R package already installed is the correct version")
-} else {
-    pak::pkg_install("blue-matter/SAMtool")
-}
-
-#####@> openMSE (1.1.1)...
-if(packageVersion("openMSE") == "1.1.1") {
-    print("openMSE R package already installed is the correct version")
-} else {
-    pak::pkg_install("blue-matter/openMSE")
-}
-
-#####@> nswo-mse (0.29.0)...
-if(packageVersion("SWOMSE") == "0.29.0") {
-    print("SWOMSE R package already installed is the correct version")
-} else {
-    pak::pkg_install("ICCAT/nswo-mse")
-}
+######@> Load some custom functions 
+source("000_Import_OM_Functions.R")
 
 ######@> Loading R packages...
 library(openMSE)
@@ -59,11 +35,11 @@ library(tidyverse)
 library(viridis)
 library(janitor)
 library(readxl)
-library(ggmse)
+# library(ggmse)
 
 ######@> Instaling MSEextra...
 ## MSEextra(force = TRUE)
-library(MSEextra)
+# library(MSEextra)
 ## library(SWOMSE)
 
 ######@> Defining output folder to the OMs...
@@ -126,11 +102,11 @@ ggplot(data = df, aes(x = x, y = y, fill = z)) +
 ######@> Loading prepared dataset...
 
 ######@> Loading indices scenarios...
-load("05_Results/tsIndex_ver02.RData")
+load("05_Results/tsIndex_ver03.RData")
 
 ######@> Loading extracted quantities (ie. MSY, SSB_MSY, F_MSY) from the
 ######@> Stock Assessment and catches from T1NC for the recent year...
-load("05_Results/Reference_Quantities_ver02.RData")
+load("05_Results/Reference_Quantities_ver03.RData")
 
 ########################################################################
 ######@> Importing OMs...
@@ -139,8 +115,11 @@ load("05_Results/Reference_Quantities_ver02.RData")
 
 #####@> Set interval to 1
 interval <- 1
+nsim <- 100
+reps <- 1
 
 #####@> Create Data object to be used in all OMs...
+
 SSdir <- paste0(path01, "WSKJ_EstRec93_Qnt25_h6")
 OM1.Data <- SS2Data(SSdir,
                     Name = "OM1 Data WSKJ_EstRec93_Qnt25_h6",
@@ -156,30 +135,33 @@ for (sl in slots_to_copy) {
     slot(WSKJ_Data, sl) <- slot(OM1.Data, sl)
 }
 
-####@> Inverse-variance weighted index manually added...
-index <- c(rep(NA, 29),
-           tsIndex$Obs[tsIndex$Fleet ==
-                       "Inverse variance weighted average"][1:40])
+####@> Inverse-variance weighted index manually added..
+ObsDataYears <- 1952:2024
+
+WSKJ_Data@Year <- ObsDataYears 
+
+tsIndex <- tsIndex |> dplyr::filter(Fleet=='Inverse variance weighted')
+NAyears <- length(ObsDataYears[1]:(tsIndex$Year[1]-1))
+
+index <- c(rep(NA, NAyears), tsIndex$Obs)
 index <- index/mean(index, na.rm = TRUE)
-names(index) <- OM1.Data@Year
-cv_index <- c(rep(NA, 29), rep(0.2, 40))
+names(index) <- seq(1952, by=1, length.out=length(index))
+cv_index <- rep(0.2, length(index))
+cv_index <-names(index)
 names(cv_index) <- OM1.Data@Year
 WSKJ_Data@Ind <- array(index, dim = c(1, length(index)))
 WSKJ_Data@CV_Ind <- array(cv_index, dim = c(1, length(index)))
-## WSKJ_Data@Year <- 1952:2022
 
-## ####@> Catches for the recent period manually added...
-## catches <- c(WSKJ_Data@Cat[1, ], 20048.21, 21377.24)
-## cv_catches <- c(WSKJ_Data@CV_Cat, 0.2, 0.2)
-## WSKJ_Data@Cat <- array(catches, dim = c(1, length(catches)))
-## WSKJ_Data@CV_Cat <- array(cv_catches, dim = c(1, length(cv_catches)))
+# TODO - update 2024 catch to observed value
+Catchdf <- data.frame(
+  Year = 2021:2024,
+  Catch = c(20257.18, 21629.20, 29588.25, 23824.88))
 
-####@> Function to add WSJK_Data and I_beta = 1 to cpars...
-update_cpars <- function(OM) {
-    OM@cpars$Data <- WSKJ_Data
-    OM@cpars$I_beta <- rep(1, OM@nsim)
-    OM
-}
+catches <- c(WSKJ_Data@Cat[1, ], Catchdf$Catch)
+cv_catches <- c(WSKJ_Data@CV_Cat,rep(0.2, length(Catchdf$Year)))
+WSKJ_Data@Cat <- array(catches, dim = c(1, length(catches)))
+WSKJ_Data@CV_Cat <- array(cv_catches, dim = c(1, length(cv_catches)))
+
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt25_h6...
@@ -188,10 +170,11 @@ update_cpars <- function(OM) {
 SSdir <- paste0(path01, "WSKJ_EstRec93_Qnt25_h6")
 
 ######@> W-SKJ EstRec93 Qnt25_h6 - [Method SS2OM]...
+
 OM1 <- SS2OM(SSdir,
-             nsim = 100,
+             nsim = nsim,
              proyears = 30,
-             reps = 100,
+             reps = reps,
              maxF = 3,
              seed = 1,
              interval = interval,
@@ -211,6 +194,7 @@ OM1 <- SS2OM(SSdir,
 #####@> Update OM1 cpars data compartment...
 OM1 <- update_cpars(OM1)
 
+
 #####@> Looking to the OM...
 plot_SS2OM(OM1,
            SSdir,
@@ -220,6 +204,7 @@ plot_SS2OM(OM1,
            open_file = TRUE,
            silent = FALSE)
 
+
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt50_h6
 
@@ -228,9 +213,9 @@ SSdir <- paste0(path01, "WSKJ_EstRec93_Qnt50_h6")
 
 ######@> W-SKJ EstRec93 Qnt50_h6 - [Method SS2OM]...
 OM2 <- SS2OM(SSdir,
-             nsim = 100,
+             nsim = nsim,
              proyears = 30,
-             reps = 100,
+             reps = reps,
              maxF = 3,
              seed = 1,
              interval = interval,
@@ -267,9 +252,9 @@ SSdir <- paste0(path01, "WSKJ_EstRec93_Qnt75_h6")
 
 ######@> W-SKJ EstRec93 Qnt75_h6 - [Method SS2OM]...
 OM3 <- SS2OM(SSdir,
-             nsim = 100,
+             nsim = nsim,
              proyears = 30,
-             reps = 100,
+             reps = reps,
              maxF = 3,
              seed = 1,
              interval = interval,
@@ -306,9 +291,9 @@ SSdir <- paste0(path01, "WSKJ_EstRec93_Qnt25_h7")
 
 ######@> W-SKJ EstRec93 Qnt25_h7 - [Method SS2OM]...
 OM4 <- SS2OM(SSdir,
-             nsim = 100,
+             nsim = nsim,
              proyears = 30,
-             reps = 100,
+             reps = reps,
              maxF = 3,
              seed = 1,
              interval = interval,
@@ -345,9 +330,9 @@ SSdir <- paste0(path01, "WSKJ_EstRec93_Qnt50_h7")
 
 ######@> W-SKJ EstRec93 Qnt50_h7 - [Method SS2OM]...
 OM5 <- SS2OM(SSdir,
-             nsim = 100,
+             nsim = nsim,
              proyears = 30,
-             reps = 100,
+             reps = reps,
              maxF = 3,
              seed = 1,
              interval = interval,
@@ -384,9 +369,9 @@ SSdir <- paste0(path01, "WSKJ_EstRec93_Qnt75_h7")
 
 ######@> W-SKJ EstRec93 Qnt75_h7 - [Method SS2OM]...
 OM6 <- SS2OM(SSdir,
-             nsim = 100,
+             nsim = nsim,
              proyears = 30,
-             reps = 100,
+             reps = reps,
              maxF = 3,
              seed = 1,
              interval = interval,
@@ -423,9 +408,9 @@ SSdir <- paste0(path01, "WSKJ_EstRec93_Qnt25_h8")
 
 ######@> W-SKJ EstRec93 Qnt25_h8 - [Method SS2OM]...
 OM7 <- SS2OM(SSdir,
-             nsim = 100,
+             nsim = nsim,
              proyears = 30,
-             reps = 100,
+             reps = reps,
              maxF = 3,
              seed = 1,
              interval = interval,
@@ -462,9 +447,9 @@ SSdir <- paste0(path01, "WSKJ_EstRec93_Qnt50_h8")
 
 ######@> W-SKJ EstRec93 Qnt50_h8 - [Method SS2OM]...
 OM8 <- SS2OM(SSdir,
-             nsim = 100,
+             nsim = nsim,
              proyears = 30,
-             reps = 100,
+             reps = reps,
              maxF = 3,
              seed = 1,
              interval = interval,
@@ -501,9 +486,9 @@ SSdir <- paste0(path01, "WSKJ_EstRec93_Qnt75_h8")
 
 ######@> W-SKJ EstRec93 Qnt75_h8 - [Method SS2OM]...
 OM9 <- SS2OM(SSdir,
-             nsim = 100,
+             nsim = nsim,
              proyears = 30,
-             reps = 100,
+             reps = reps,
              maxF = 3,
              seed = 1,
              interval = interval,

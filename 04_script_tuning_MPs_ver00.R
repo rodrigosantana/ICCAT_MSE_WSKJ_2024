@@ -38,9 +38,7 @@ library(snowfall)
 ## Initial_MP_Yr <- 2025
 
 ######@> Creating catch data.frame for the recent years...
-Catchdf <- data.frame(
-    Year = 2021:2022,
-    Catch = c(20048.21, 21377.24))
+Catchdf <- read("CatchDF.rda")
 
 ######@> Creating index data.frame for the recent years...
 load("05_Results/tsIndex_ver02.RData")
@@ -49,7 +47,7 @@ Cpuedf <- tsIndex %>%
            Fleet == "Inverse variance weighted average")
 
 ######@> Loading one historical scenario for testing...
-Hist05 <- readRDS("03_Hists/OM005_IVInds_CORRECTED_ver03.hist")
+Hist05 <- readRDS("03_Hists/OM005_IVInds_ver02.hist")
 
 #####@> Extract Data for testing MPs...
 Data <- Hist05@Data
