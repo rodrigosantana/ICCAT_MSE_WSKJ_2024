@@ -5,14 +5,14 @@
 #_User_info_available_at:_https://nmfs-ost.github.io/ss3-website/
 #_Source_code_at:_https://github.com/nmfs-ost/ss3-source-code
 
-#_Start_time: Wed May  7 15:50:31 2025
+#_Start_time: Wed May  7 16:09:15 2025
 #_echo_input_data
 #C data file created using the SS_writedat function in the R package r4ss
 #C should work with SS version:
 #C file write time: 2020-03-27 14:45:39
 #V3.30.23.2;_safe;_compile_date:_Apr 17 2025;_Stock_Synthesis_by_Richard_Methot_(NOAA)_using_ADMB_13.2
 1952 #_StartYr
-2023 #_EndYr
+2024 #_EndYr
 1 #_Nseas
  12 #_months/season
 2 #_Nsubseasons (even number, minimum is 2)
@@ -118,6 +118,7 @@
 2021 1 1 1161.01 0.01
 2022 1 1 869.048 0.01
 2023 1 1 1551.5 0.01
+2024 1 1 1193.85 0.01
 -999 1 2 1e-20 0.01
 1952 1 2 1229 0.01
 1953 1 2 1281 0.01
@@ -191,6 +192,7 @@
 2021 1 2 15572.9 0.01
 2022 1 2 11687.2 0.01
 2023 1 2 18751.6 0.01
+2024 1 2 15337.2 0.01
 -999 1 3 1e-20 0.01
 1952 1 3 0 0.01
 1953 1 3 0 0.01
@@ -264,6 +266,7 @@
 2021 1 3 400.57 0.01
 2022 1 3 1207.43 0.01
 2023 1 3 3586.95 0.01
+2024 1 3 1731.65 0.01
 -999 1 4 1e-20 0.01
 1952 1 4 0 0.01
 1953 1 4 0 0.01
@@ -337,6 +340,7 @@
 2021 1 4 118.04 0.01
 2022 1 4 103.4 0.01
 2023 1 4 155.06 0.01
+2024 1 4 125.5 0.01
 -999 1 5 1e-20 0.01
 1952 1 5 0 0.01
 1953 1 5 0 0.01
@@ -410,6 +414,7 @@
 2021 1 5 3422.69 0.01
 2022 1 5 7941.05 0.01
 2023 1 5 6811.12 0.01
+2024 1 5 6058.29 0.01
 -9999 0 0 0 0
 #
 #_CPUE_and_surveyabundance_and_index_observations
@@ -463,7 +468,7 @@
 2021 7 1 1.03 0.2 #_ PS_West
 2022 7 1 0.7 0.33 #_ PS_West
 2023 7 1 1.36 0.16 #_ PS_West
-2024 7 -1 0.9 0.32 #_ PS_West
+2024 7 1 0.9 0.32 #_ PS_West
 2000 7 2 1.14 0.17 #_ BB_West
 2001 7 2 1 0.06 #_ BB_West
 2002 7 2 0.95 0.07 #_ BB_West
@@ -488,7 +493,7 @@
 2021 7 2 0.8 0.11 #_ BB_West
 2022 7 2 0.96 0.12 #_ BB_West
 2023 7 2 1.36 0.11 #_ BB_West
-2024 7 -2 1.34 0.12 #_ BB_West
+2024 7 2 1.34 0.12 #_ BB_West
 1993 7 3 0.38 0.23 #_ LL_USMX
 1994 7 3 0.62 0.23 #_ LL_USMX
 1995 7 3 0.36 0.22 #_ LL_USMX
@@ -520,7 +525,7 @@
 2021 7 3 0.67 0.23 #_ LL_USMX
 2022 7 3 1.03 0.19 #_ LL_USMX
 2023 7 3 0.9 0.19 #_ LL_USMX
-2024 7 -3 0.9 0.21 #_ LL_USMX
+2024 7 3 0.9 0.21 #_ LL_USMX
 2010 7 5 0.9 0.2 #_ HL_RR
 2011 7 5 0.29 0.11 #_ HL_RR
 2012 7 5 0.24 0.12 #_ HL_RR

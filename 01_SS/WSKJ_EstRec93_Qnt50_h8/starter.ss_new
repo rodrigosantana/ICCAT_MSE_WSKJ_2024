@@ -28,7 +28,7 @@ control.ss_new
 2 # MCeval thin interval
 0 # jitter initial parm value by this fraction
 -1 # min year for sdreport outputs (-1 for styr); #_1950
--2 # max year for sdreport outputs (-1 for endyr+1; -2 for endyr+Nforecastyrs); #_2024
+-2 # max year for sdreport outputs (-1 for endyr+1; -2 for endyr+Nforecastyrs); #_2025
 0 # N individual STD years 
 #COND: vector of year values if N>0
 
@@ -43,5 +43,5 @@ control.ss_new
 2 # F_std_scaling: 0=no scaling; 1=F/Fspr; 2=F/Fmsy; 3=F/Fbtgt; where F means annual F_std, Fmsy means F_std@msy; values >=11 invoke N multiyr using 10s and 100s digit; append .1 to invoke log(ratio)
 0 # MCMC output detail: integer part (0=default; 1=adds obj func components; 2= +write_report_for_each_mceval); and decimal part (added to SR_LN(R0) on first call to mcmc)
 0 # ALK tolerance ***disabled in code
--1 # random number seed for bootstrap data (-1 to use long(time) as seed): # 1746643764
+-1 # random number seed for bootstrap data (-1 to use long(time) as seed): # 1746644984
 3.30 # check value for end of file and for version control

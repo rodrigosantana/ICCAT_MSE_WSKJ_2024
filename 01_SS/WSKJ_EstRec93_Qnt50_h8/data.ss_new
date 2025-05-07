@@ -13,7 +13,7 @@
 #_observed data: 
 #V3.30.18.00;_safe;_compile_date:_Sep 30 2021;_Stock_Synthesis_by_Richard_Methot_(NOAA)_using_ADMB_12.3
 1952 #_StartYr
-2023 #_EndYr
+2024 #_EndYr
 1 #_Nseas
  12 #_months/season
 2 #_Nsubseasons (even number, minimum is 2)

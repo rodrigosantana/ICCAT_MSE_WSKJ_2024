@@ -1,5 +1,7 @@
 Warning 1 : Forecast=0 or -1, so rest of forecast file will not be read and can be omitted;
 Warning 2 : A one year forecast using recent F will be done automatically
-Warning 3 : bias adjustment ramp extends into forecast; biasadj set to 0.0 internally for forecast years
+Warning 3 : At least one block pattern ends in endyr. Check the output parameter value time series to see if the values in forecast years are as intended.
+Warning 4 : bias adjustment ramp extends into forecast; biasadj set to 0.0 internally for forecast years
+Warning 5 : Final gradient: 0.000121889 is larger than final_conv: 0.0001
 Note 1 Information: A revised protocol for the Fcast_yr specification is available and recommended.
- 3 warnings  and 1 note 
+ 5 warnings  and 1 note 
