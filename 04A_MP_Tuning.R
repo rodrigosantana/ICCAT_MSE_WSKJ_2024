@@ -54,6 +54,9 @@ DoMPTune <- function(HistList,
   
   dirName <- paste0('DataLag_', Data_Lag, '_Interval_', ManagementInterval)
   
+  if (!dir.exists('TunedMPs'))
+    dir.create('TunedMPs')
+  
   if (!dir.exists(file.path('TunedMPs', dirName)))
     dir.create(file.path('TunedMPs', dirName))
   
