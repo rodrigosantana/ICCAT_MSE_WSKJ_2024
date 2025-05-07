@@ -70,17 +70,33 @@
 <!-- Site navigation menu -->
    <ul id="tabnav">
     <li class="tab1"><a href="_SS_output.html">Home</a></li>
-    <li class="tab2"><a href="_SS_output_Timeseries.html">Timeseries</a></li>
-    <li class="tab3"><a href="_SS_output_RecDev.html">RecDev</a></li>
-    <li class="tab4"><a href="_SS_output_Catch.html">Catch</a></li>
-    <li class="tab5"><a href="_SS_output_Yield.html">Yield</a></li>
-    <li class="tab6"><a href="_SS_output_Data.html">Data</a></li>
-    <li class="tab7"><a href="_SS_output_Pars.html">Pars</a></li>
-    <li class="tab8"><a href="_SS_output_DiagnosticTables.html">DiagnosticTables</a></li>
+    <li class="tab2"><a href="_SS_output_Bio.html">Bio</a></li>
+    <li class="tab3"><a href="_SS_output_Sel.html">Sel</a></li>
+    <li class="tab4"><a href="_SS_output_Timeseries.html">Timeseries</a></li>
+    <li class="tab5"><a href="_SS_output_RecDev.html">RecDev</a></li>
+    <li class="tab6"><a href="_SS_output_S-R.html">S-R</a></li>
+    <li class="tab7"><a href="_SS_output_Catch.html">Catch</a></li>
+    <li class="tab8"><a href="_SS_output_SPR.html">SPR</a></li>
+    <li class="tab9"><a href="_SS_output_Index.html">Index</a></li>
+    <li class="tab10"><a href="_SS_output_Numbers.html">Numbers</a></li>
+    <li class="tab11"><a href="_SS_output_CompDat.html">CompDat</a></li>
+    <li class="tab12"><a href="_SS_output_LenComp.html">LenComp</a></li>
+    <li class="tab13"><a href="_SS_output_Yield.html">Yield</a></li>
+    <li class="tab14"><a href="_SS_output_Data.html">Data</a></li>
+    <li class="tab15"><a href="_SS_output_Pars.html">Pars</a></li>
+    <li class="tab16"><a href="_SS_output_DiagnosticTables.html">DiagnosticTables</a></li>
   </ul>
 
 
 <h2><a name="RecDev">RecDev</h2>
-<p align=left><a href='recdevs1_points.png'><img src='recdevs1_points.png' border=0 width=500 alt='Recruitment deviations'></a><br>Recruitment deviations<br><i><small>file: <a href='recdevs1_points.png'>recdevs1_points.png</a></small></i>
-<p align=left><a href='recdevs2_withbars.png'><img src='recdevs2_withbars.png' border=0 width=500 alt='Recruitment deviations with 95% intervals'></a><br>Recruitment deviations with 95% intervals<br><i><small>file: <a href='recdevs2_withbars.png'>recdevs2_withbars.png</a></small></i>
-<p align=left><a href='recdevs3_varcheck.png'><img src='recdevs3_varcheck.png' border=0 width=500 alt='Recruitment deviations variance check.'></a><br>Recruitment deviations variance check.<br> See later figure of transformed variance values for comparison with bias adjustment settings in the model.<br><i><small>file: <a href='recdevs3_varcheck.png'>recdevs3_varcheck.png</a></small></i>
+<p align=left><a href='recdevs1_points.png'><img src='recdevs1_points.png' border=0 width=500 alt=''></a><br>Recruitment deviations<br><i><small>file: <a href='recdevs1_points.png'>recdevs1_points.png</a></small></i>
+<p align=left><a href='recdevs2_withbars.png'><img src='recdevs2_withbars.png' border=0 width=500 alt=''></a><br>Recruitment deviations with 95% intervals<br><i><small>file: <a href='recdevs2_withbars.png'>recdevs2_withbars.png</a></small></i>
+<p align=left><a href='recdevs3_varcheck.png'><img src='recdevs3_varcheck.png' border=0 width=500 alt=''></a><br>Recruitment deviations variance check.<br> See later figure of transformed variance values for comparison with bias adjustment settings in the model.<br><i><small>file: <a href='recdevs3_varcheck.png'>recdevs3_varcheck.png</a></small></i>
+<p align=left><a href='recruit_fit_bias_adjust.png'><img src='recruit_fit_bias_adjust.png' border=0 width=500 alt=''></a><br>Points are transformed variances. Red line shows current settings for bias adjustment specified in control file. Blue line shows least squares estimate of alternative bias adjustment relationship for recruitment deviations (which may or may not be an improvement. For more information, see<br> 
+<blockquote>Methot, R.D. and Taylor, I.G., 2011. Adjusting for bias due to variability of estimated recruitments in fishery assessment models. <i>Can. J. Fish. Aquat. Sci.</i>, 68:1744-1760.</blockquote><br> 
+Estimated alternative inputs to SS control file associated with blue line in figure: 
+<pre>1979.5   #_last_early_yr_nobias_adj_in_MPD 
+1993.0   #_first_yr_fullbias_adj_in_MPD 
+2021.0   #_last_yr_fullbias_adj_in_MPD 
+2036.5   #_first_recent_yr_nobias_adj_in_MPD 
+0.6536  #_max_bias_adj_in_MPD (1.0 to mimic pre-2009 models) </pre><br><i><small>file: <a href='recruit_fit_bias_adjust.png'>recruit_fit_bias_adjust.png</a></small></i>
