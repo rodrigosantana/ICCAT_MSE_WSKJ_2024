@@ -59,31 +59,42 @@ DoMPTune <- function(HistList,
 }
 
 
-setup() # setup parallel processing 
-
-snowfall::sfExport(list=c('FixedTAC',
-                          'SameTAC',
-                          'adjust_TAC',
-                          'adjust_TAC2')
+# not working for some reason
+# setup() # setup parallel processing 
+# 
+# snowfall::sfExport(list=c('FixedTAC',
+#                           'SameTAC',
+#                           'adjust_TAC',
+#                           'adjust_TAC2')
                    )
 # ----- IR MPs ---------
 IR_MPs <- c("IR_01", "IR_02", "IR_03")
 
 for (mp in IR_MPs) {
-  DoMPTune(HistList, mp, parallel=FALSE)
+  DoMPTune(HistList, mp)
 }
 
 
 # ----- CE MPs ---------
 CE_MPs <- c('CE_01', 'CE_02', 'CE_03')
 
+for (mp in CE_MPs) {
+  DoMPTune(HistList, mp)
+}
+
 # ----- IS MPs ---------
 IS_MPs <- c('IS_01', 'IS_02', 'IS_03')
+
+for (mp in IS_MPs) {
+  DoMPTune(HistList, mp)
+}
 
 # ----- SP MPs ---------
 SP_MPs <- c('SP_01', 'SP_02', 'SP_03', 'SP_04')
 
-
+for (mp in SP_MPs) {
+  DoMPTune(HistList, mp)
+}
 
 
 
