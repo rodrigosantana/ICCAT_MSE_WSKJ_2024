@@ -393,12 +393,11 @@ IS_01 <- function(x, Data, Data_Lag = 1, Interval = 3,
   Data <- Lag_Data(Data, Data_Lag)
   Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
   
-  
   ## Smooth combined index
-  index <- smoothed_index <- Data@Ind[x,]
-  smoothed <- stats::smooth(index[!is.na(index)])
-  smoothed_index[!is.na(smoothed_index)] <- smoothed
-  Data@Ind[x,] <- smoothed_index
+  # index <- smoothed_index <- Data@Ind[x,]
+  # smoothed <- stats::smooth(index[!is.na(index)])
+  # smoothed_index[!is.na(smoothed_index)] <- smoothed
+  # Data@Ind[x,] <- smoothed_index
   
   ## Applied Islope1 MP to lagged data
   ind <- (length(Data@Year) - (yrsmth - 1)):length(Data@Year)
@@ -414,6 +413,7 @@ IS_01 <- function(x, Data, Data_Lag = 1, Interval = 3,
   }
   I_hist <- Data@Ind[x, ind] 
   yind <- 1:yrsmth
+  
   slppar <- summary(lm(log(I_hist) ~ yind))$coefficients[2, 1:2]
   if (reps > 1) {
     Islp <- rnorm(reps, slppar[1], slppar[2])
@@ -447,10 +447,10 @@ IS_02 <- function(x, Data, Data_Lag = 1, Interval = 3,
   Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
   
   ## Smooth combined index
-  index <- smoothed_index <- Data@Ind[x,]
-  smoothed <- stats::smooth(index[!is.na(index)])
-  smoothed_index[!is.na(smoothed_index)] <- smoothed
-  Data@Ind[x,] <- smoothed_index
+  # index <- smoothed_index <- Data@Ind[x,]
+  # smoothed <- stats::smooth(index[!is.na(index)])
+  # smoothed_index[!is.na(smoothed_index)] <- smoothed
+  # Data@Ind[x,] <- smoothed_index
   
   ## Applied Islope1 MP to lagged data
   ind <- (length(Data@Year) - (yrsmth - 1)):length(Data@Year)
@@ -499,10 +499,10 @@ IS_03 <- function(x, Data, Data_Lag = 1, Interval = 3,
   Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
   
   ## Smooth combined index
-  index <- smoothed_index <- Data@Ind[x,]
-  smoothed <- stats::smooth(index[!is.na(index)])
-  smoothed_index[!is.na(smoothed_index)] <- smoothed
-  Data@Ind[x,] <- smoothed_index
+  # index <- smoothed_index <- Data@Ind[x,]
+  # smoothed <- stats::smooth(index[!is.na(index)])
+  # smoothed_index[!is.na(smoothed_index)] <- smoothed
+  # Data@Ind[x,] <- smoothed_index
   
   ## Applied Islope1 MP to lagged data
   ind <- (length(Data@Year) - (yrsmth - 1)):length(Data@Year)
@@ -531,6 +531,11 @@ IS_03 <- function(x, Data, Data_Lag = 1, Interval = 3,
   return(Rec)
 }
 class(IS_03) <- "MP"
+
+
+
+
+
 
 # ----- SP Models ----
 
