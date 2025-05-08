@@ -30,7 +30,7 @@ optPGK60_4_10 <- function(MSE_list) {
 optPGK60_1_30 <- function(MSE_list) {
     PGKm <- sapply(MSE_list, function(X) {
         ## Years 1 - 30 - index 2:31 becuase first projection year is 2025 before MP is used
-        mean(X@SB_SBMSY[ , , 2:30] > 1 & X@F_FMSY[ , , 2:31] < 1)
+        mean(X@SB_SBMSY[ , , 2:30] > 1 & X@F_FMSY[ , , 2:30] < 1)
     })
     PGKw <- mean(PGKm)
 
