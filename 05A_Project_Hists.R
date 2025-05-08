@@ -66,6 +66,7 @@ ProjectMPs <- MPnames # MPs to project
 
 ProjectMPs <- ProjectMPs[grepl("1_30", ProjectMPs)] # MPs tuned to 1-30
 
+ProjectMPs <- c("IR11_30", "SP_011_30")
 ################################################################################
 
 
@@ -75,20 +76,43 @@ for (i in seq_along(ProjectMPs)) {
   assign(ProjectMPs[i], mp, envir=.GlobalEnv)
 }
 
+parallel <- TRUE
+
+if (parallel) {
+  setup()
+  sfExport(list=list('Hists',
+                     'Catchdf', 
+                     'FixedTAC', 
+                     'SameTAC', 
+                     'adjust_TAC', 
+                     'adjust_TAC2'))
+}
 
 #### Loop Over MPs and then over OMs 
 for (mp in ProjectMPs) {
   message('\nProjecting MP: ', mp)
   if (!dir.exists(file.path(MSEDir, mp)))
     dir.create(file.path(MSEDir, mp))
-  for (i in seq_along(Hists)) {
-    message('OM: ', i, '/', length(Hists))
-    Hist <- Hists[[i]]
-    nm <- gsub('OM', '', Hist@OM@Name) |> trimws() 
-    nm <- paste(sprintf("%03d", i), nm, sep="_")
-    nm <- paste0(nm, '.mse')
-    MSE <- Project(Hist, MPs = mp, parallel = FALSE, silent=TRUE)
-    saveRDS(MSE, file.path(MSEDir, mp, nm))
+  if (parallel) {
+    sfLapply(Hists, function(i) {
+      Hist <- Hists[[i]]
+      nm <- gsub('OM', '', Hist@OM@Name) |> trimws() 
+      nm <- paste(sprintf("%03d", i), nm, sep="_")
+      nm <- paste0(nm, '.mse')
+      MSE <- Project(Hist, MPs = mp, parallel = FALSE, silent=TRUE)
+      saveRDS(MSE, file.path(MSEDir, mp, nm))
+    })
+  } else {
+    for (i in seq_along(Hists)) {
+      message('OM: ', i, '/', length(Hists))
+      Hist <- Hists[[i]]
+      nm <- gsub('OM', '', Hist@OM@Name) |> trimws() 
+      nm <- paste(sprintf("%03d", i), nm, sep="_")
+      nm <- paste0(nm, '.mse')
+      MSE <- Project(Hist, MPs = mp, parallel = FALSE, silent=TRUE)
+      saveRDS(MSE, file.path(MSEDir, mp, nm))
+    }
   }
+
 }
 
