@@ -26,43 +26,58 @@ optPGK60_4_10 <- function(MSE_list) {
   cat(paste0("*************************\n"))
   ssq
 }
-    
-# Custom Tuning Function 
-DoMPTune <- function(HistList, 
-                     MPName, 
+
+optPGK60_1_30 <- function(MSE_list) {
+    PGKm <- sapply(MSE_list, function(X) {
+        ## Years 1 - 30 - index 2:31 becuase first projection year is 2025 before MP is used
+        mean(X@SB_SBMSY[ , , 2:30] > 1 & X@F_FMSY[ , , 2:30] < 1)
+    })
+    PGKw <- mean(PGKm)
+
+    ssq <- (PGKw-0.6)^2
+    cat(paste0("*************************\n"))
+    cat(paste0("PGKw[4-10] = ", round(PGKw, 4), "\n"))
+    cat(paste0("SSQ = ", round(ssq, 5), "\n"))
+    cat(paste0("*************************\n"))
+    ssq
+}
+
+# Custom Tuning Function
+DoMPTune <- function(HistList,
+                     MPName,
                      TuneInterval=c(0.1, 2),
-                     TuneFunction=optPGK60_4_10,
-                     Data_Lag=1, 
-                     ManagementInterval=3, 
+                     TuneFunction=optPGK60_1_30,
+                     Data_Lag=1,
+                     ManagementInterval=3,
                      Initial_MP_Yr=2026,
                      tol=1E-3,
                      parallel=FALSE) {
-  
+
   tuneMP <- get(MPName)
   formals(tuneMP)$Data_Lag <- Data_Lag
   formals(tuneMP)$Interval <- ManagementInterval
-  formals(tuneMP)$Initial_MP_Yr <- Initial_MP_Yr 
+  formals(tuneMP)$Initial_MP_Yr <- Initial_MP_Yr
   class(tuneMP) <- 'MP'
-  
+
   assign(MPName, tuneMP, envir=.GlobalEnv)
-  
+
   tunedMP <- MSEtool::tune_MP(HistList, MP=MPName, MP_parname='tunepar',
                               interval=TuneInterval,
-                              minfunc=TuneFunction, 
-                              tol=tol, 
+                              minfunc=TuneFunction,
+                              tol=tol,
                               parallel=parallel)
-  
+
   dirName <- paste0('DataLag_', Data_Lag, '_Interval_', ManagementInterval)
-  
+
   if (!dir.exists('TunedMPs'))
     dir.create('TunedMPs')
-  
+
   if (!dir.exists(file.path('TunedMPs', dirName)))
     dir.create(file.path('TunedMPs', dirName))
-  
-  filename <- paste0(MPName, '.mp')
+
+  filename <- paste0(MPName, '1_30.mp')
   saveRDS(tunedMP, file.path('TunedMPs', dirName, filename))
-  
+
 }
 
 
