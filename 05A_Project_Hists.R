@@ -63,14 +63,16 @@ for (i in seq_along(tunedMPs)) {
 ProjectMPs <- MPnames # MPs to project 
 #### Loop Over MPs and then over OMs 
 for (mp in ProjectMPs) {
+  message('\nProjecting MP: ', mp)
   if (!dir.exists(file.path(MSEDir, mp)))
     dir.create(file.path(MSEDir, mp))
-  for (om in seq_along(Hists)) {
+  for (i in seq_along(Hists)) {
+    message('OM: ', i, '/', length(Hists))
     Hist <- Hists[[i]]
     nm <- gsub('OM', '', Hist@OM@Name) |> trimws() 
     nm <- paste(sprintf("%03d", i), nm, sep="_")
     nm <- paste0(nm, '.mse')
-    MSE <- Project(Hist, MPs = mp, parallel = FALSE)
+    MSE <- Project(Hist, MPs = mp, parallel = FALSE, silent=TRUE)
     saveRDS(MSE, file.path(MSEDir, mp, nm))
   }
 }
