@@ -96,18 +96,31 @@ DoMPTune <- function(HistList,
 # 
 AllMPs <- getMPNames()
 
+parallel <- TRUE
+
+if (parallel) {
+  setup()
+  sfExport(list=list('Catchdf', 
+                     'FixedTAC', 
+                     'SameTAC', 
+                     'adjust_TAC', 
+                     'adjust_TAC2'))
+}
+
 # ----- CE MPs ---------
 CE_MPs <- c('CE1', 'CE2', 'CE3')
 
 for (mp in CE_MPs) {
-  DoMPTune(HistList, mp)
+  DoMPTune(HistList, mp,parallel = parallel)
 }
 
 # ----- IR MPs ---------
 IR_MPs <- c("IR1", "IR2", 'IR3')
 
+
+
 for (mp in IR_MPs) {
-  DoMPTune(HistList, mp, c(0.6, 1.5))
+  DoMPTune(HistList, mp, c(0.6, 1.5), parallel = parallel)
 }
 
 

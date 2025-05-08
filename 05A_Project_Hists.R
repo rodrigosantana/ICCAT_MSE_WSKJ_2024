@@ -57,10 +57,17 @@ tunedMPs <- list.files(MngOption, full.names = TRUE, recursive = )
 MPnames <- gsub('.mp', '', basename(tunedMPs))
 
 
+################################################################################
+#
+# Select MPs to Project - some may already be done 
+#
+################################################################################
 ProjectMPs <- MPnames # MPs to project
 
-
 ProjectMPs <- ProjectMPs[grepl("1_30", ProjectMPs)] # MPs tuned to 1-30
+
+################################################################################
+
 
 for (i in seq_along(ProjectMPs)) {
   ind <- match(ProjectMPs[i], MPnames)
