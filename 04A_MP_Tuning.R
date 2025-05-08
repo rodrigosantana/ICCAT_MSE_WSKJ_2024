@@ -4,8 +4,20 @@ source("000_load_openMSE_packages.R")
 
 library(openMSE)
 
+
 # Source pre-tuned MPs
-source("03A_Define_MPs.R")
+suppressWarnings(rm(list=avail('MP'))) # remove MPs from global enviroment
+
+# Load MPs into global environment
+for (fl in list.files("04_MPs", full.names = TRUE))   source(fl)
+
+getMPNames <- function() {
+  ls(envir = .GlobalEnv)[vapply(ls(envir = .GlobalEnv),
+                                MSEtool:::getclass, logical(1), 
+                                classy = 'MP')]
+}
+
+
 
 # Load Hist files
 HistList <- readRDS("03_Hists/HistList.rda")
@@ -81,30 +93,25 @@ DoMPTune <- function(HistList,
 }
 
 
-# not working for some reason
-# setup() # setup parallel processing
 # 
-# snowfall::sfExport(list=c('FixedTAC',
-#                           'SameTAC',
-#                           'adjust_TAC',
-#                           'adjust_TAC2')
-#                    )
+AllMPs <- getMPNames()
 
+# ----- CE MPs ---------
+CE_MPs <- c('CE1', 'CE2', 'CE3')
+
+for (mp in CE_MPs) {
+  DoMPTune(HistList, mp)
+}
 
 # ----- IR MPs ---------
-IR_MPs <- c("IR_01", "IR_02", "IR_03")
+IR_MPs <- c("IR_01", "IR_02")
 
 for (mp in IR_MPs) {
   DoMPTune(HistList, mp)
 }
 
 
-# ----- CE MPs ---------
-CE_MPs <- c('CE_01', 'CE_02', 'CE_03')
 
-for (mp in CE_MPs) {
-  DoMPTune(HistList, mp)
-}
 
 # ----- IS MPs ---------
 # IS_MPs <- c('IS_01', 'IS_02', 'IS_03')

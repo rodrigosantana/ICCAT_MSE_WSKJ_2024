@@ -1,8 +1,6 @@
 
 #
 
-
-
 source('03AA_MP_Internal_Functions.R')
 
 #####@> Constant Catch MPs -----
@@ -54,10 +52,10 @@ IR_01 <- function(x, Data, Data_Lag = 1, Interval = 3,
   
   # Set TAC
   ## Smooth combined index
-  index <- smoothed_index <- Data@Ind[x,]
-  smoothed <- stats::smooth(index[!is.na(index)])
-  smoothed_index[!is.na(smoothed_index)] <- smoothed
-  Data@Ind[x,] <- smoothed_index
+  # index <- smoothed_index <- Data@Ind[x,]
+  # smoothed <- stats::smooth(index[!is.na(index)])
+  # smoothed_index[!is.na(smoothed_index)] <- smoothed
+  # Data@Ind[x,] <- smoothed_index
   
   ## Historical data...
   yr.ind <- which(Data@Year == max(Data@Year) - yrs[1])
@@ -73,13 +71,13 @@ IR_01 <- function(x, Data, Data_Lag = 1, Interval = 3,
   Cc <- MSEtool::trlnorm(reps = 1, Cat, Data@CV_Cat[x, 1])
   
   ## Harvest control rule...
-  if(alpha > 1.2) {
-    alpha <- 1.2
-  } else if(alpha < 0.8) {
-    alpha <- 0.8
-  } else {
-    alpha <- alpha
-  }
+  # if(alpha > 1.2) {
+  #   alpha <- 1.2
+  # } else if(alpha < 0.8) {
+  #   alpha <- 0.8
+  # } else {
+  #   alpha <- alpha
+  # }
   ## TAC...
   TAC <- alpha  * Cc
   ## TAC <- MSEtool::TACfilter(TAC)
@@ -94,7 +92,7 @@ class(IR_01) <- "MP"
 #####@> Iratio with symetrical TAC correction... 
 IR_02 <- function(x, Data, Data_Lag = 1, Interval = 3,
                   Initial_MP_Yr = 2026, reps =  1,
-                  tunepar = 1.143986, mc = c(0.2, 0.2),
+                  tunepar = 1.143986, mc = c(0.25, 0.25),
                   yrs = c(3, 5), ...) {
   Rec <- new("Rec")
   
@@ -128,13 +126,13 @@ IR_02 <- function(x, Data, Data_Lag = 1, Interval = 3,
   Cat <- Data@Cat[x, length(Data@Cat[x, ])]
   Cc <- MSEtool::trlnorm(reps = 1, Cat, Data@CV_Cat[x, 1])
   ## Harvest control rule...
-  if(alpha > 1.2) {
-    alpha <- 1.2
-  } else if(alpha < 0.8) {
-    alpha <- 0.8
-  } else {
-    alpha <- alpha
-  }
+  # if(alpha > 1.2) {
+  #   alpha <- 1.2
+  # } else if(alpha < 0.8) {
+  #   alpha <- 0.8
+  # } else {
+  #   alpha <- alpha
+  # }
   ## TAC...
   TAC <- alpha  * Cc
   ## TAC <- MSEtool::TACfilter(TAC)
@@ -183,13 +181,13 @@ IR_03 <- function(x, Data, Data_Lag = 1, Interval = 3,
   Cat <- Data@Cat[x, length(Data@Cat[x, ])]
   Cc <- MSEtool::trlnorm(reps = 1, Cat, Data@CV_Cat[x, 1])
   ## Harvest control rule...
-  if(alpha > 1.2) {
-    alpha <- 1.2
-  } else if(alpha < 0.8) {
-    alpha <- 0.8
-  } else {
-    alpha <- alpha
-  }
+  # if(alpha > 1.2) {
+  #   alpha <- 1.2
+  # } else if(alpha < 0.8) {
+  #   alpha <- 0.8
+  # } else {
+  #   alpha <- alpha
+  # }
   ## TAC...
   TAC <- alpha * Cc
   ## TAC <- MSEtool::TACfilter(TAC)
@@ -262,7 +260,7 @@ class(CE_01) <- "MP"
 #####@> correction...
 CE_02 <- function(x, Data, Data_Lag = 1, Interval = 3,
                   Initial_MP_Yr = 2026, reps =  1,
-                   tunepar = 1.792558, mc = c(0.2, 0.2),
+                   tunepar = 1.792558, mc = c(0.25, 0.25),
                   yrs = c(5, 3), ...) {
   Rec <- new("Rec")
   
