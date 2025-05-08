@@ -113,33 +113,36 @@ path02 <- "../R-Work/"
 ########################################################################
 ######@> Simulating Projections Data...
 
-Hists <- readRDS("03_Hists/HistList.rda")
 
-ManagementOption <- 'DataLag_1_Interval_3'
+##### MADE DIFFERENT VERSION IN 05A_Project_Hists.R #####
 
-tunedMPs <- list.files(file.path('TunedMPs', ManagementOption), full.names = TRUE)
-
-MPnames <- gsub('.mp', '', basename(tunedMPs))
-
-
-for (i in seq_along(tunedMPs)) {
-  mp <- readRDS(tunedMPs[i])
-  assign(MPnames[i], mp, envir=.GlobalEnv)
-}
-
-
-######@> Looping to run the MSE for all histories data...
-for(i in seq_along(Hists)) {
-    Hist <- Hists[[i]]
-    nm <- gsub('OM', '', Hist@OM@Name) |> trimws() 
-    nm <- paste(sprintf("%03d", i), nm, sep="_")
-    nm <- paste0(nm, '.mse')
-    if (!dir.exists(file.path("04_MSEs", ManagementOption)))
-      dir.create(file.path("04_MSEs", ManagementOption))
-    
-    MSE <- Project(Hist, MPs = MPnames, parallel = FALSE)
-    saveRDS(MSE, file.path("04_MSEs", ManagementOption, nm))
-}
+# Hists <- readRDS("03_Hists/HistList.rda")
+# 
+# ManagementOption <- 'DataLag_1_Interval_3'
+# 
+# tunedMPs <- list.files(file.path('TunedMPs', ManagementOption), full.names = TRUE)
+# 
+# MPnames <- gsub('.mp', '', basename(tunedMPs))
+# 
+# for (i in seq_along(tunedMPs)) {
+#   mp <- readRDS(tunedMPs[i])
+#   assign(MPnames[i], mp, envir=.GlobalEnv)
+# }
+# 
+# 
+# 
+# ######@> Looping to run the MSE for all histories data...
+# for(i in seq_along(Hists)) {
+#     Hist <- Hists[[i]]
+#     nm <- gsub('OM', '', Hist@OM@Name) |> trimws() 
+#     nm <- paste(sprintf("%03d", i), nm, sep="_")
+#     nm <- paste0(nm, '.mse')
+#     if (!dir.exists(file.path("04_MSEs", ManagementOption)))
+#       dir.create(file.path("04_MSEs", ManagementOption))
+#     
+#     MSE <- Project(Hist, MPs = MPnames, parallel = FALSE)
+#     saveRDS(MSE, file.path("04_MSEs", ManagementOption, nm))
+# }
 
 ########################################################################
 ##

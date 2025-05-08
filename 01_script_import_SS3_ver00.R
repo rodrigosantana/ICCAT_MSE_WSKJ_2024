@@ -135,8 +135,6 @@ for (sl in slots_to_copy) {
     slot(WSKJ_Data, sl) <- slot(OM1.Data, sl)
 }
 
-
-
 ####@> Inverse-variance weighted index manually added..
 tsIndex <- tsIndex |> dplyr::filter(Fleet=='Inverse variance weighted')
 NAyears <- length(WSKJ_Data@Year[1]:(tsIndex$Year[1]-1))
@@ -144,16 +142,18 @@ index <- c(rep(NA, NAyears), tsIndex$Obs)
 index <- index/mean(index, na.rm = TRUE)
 names(index) <- seq(1952, by=1, length.out=length(index))
 cv_index <- rep(0.2, length(index))
-cv_index <-names(index)
+# cv_index <-names(index)
 names(cv_index) <- OM1.Data@Year
 WSKJ_Data@Ind <- array(index, dim = c(1, length(index)))
 WSKJ_Data@CV_Ind <- array(cv_index, dim = c(1, length(index)))
 
 data.frame(Year=WSKJ_Data@Year,
            Index=WSKJ_Data@Ind[1,],
-           Catch=WSKJ_Data@Cat[1,])
+           Index_CV=WSKJ_Data@CV_Ind[1,],
+           Catch=WSKJ_Data@Cat[1,]
+           )
 
-WSKJ_Data@MPrec <- rep(tail(WSKJ_Data@Cat[1,],1), nsim)
+WSKJ_Data@MPrec <- tail(WSKJ_Data@Cat[1,],1)
 saveRDS(WSKJ_Data, "WSKJ_Data.rda")
 
 ######@>================================================================
@@ -189,13 +189,13 @@ OM1 <- update_cpars(OM1)
 
 
 #####@> Looking to the OM...
-plot_SS2OM(OM1,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt25_h6",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+# plot_SS2OM(OM1,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt25_h6",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 
 ######@>================================================================
@@ -229,13 +229,13 @@ OM2 <- SS2OM(SSdir,
 OM2 <- update_cpars(OM2)
 
 #####@> Looking to the OM...
-plot_SS2OM(OM2,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt50_h6",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+# plot_SS2OM(OM2,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt50_h6",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt75_h6
@@ -268,13 +268,13 @@ OM3 <- SS2OM(SSdir,
 OM3 <- update_cpars(OM3)
 
 #####@> Looking to the OM...
-plot_SS2OM(OM3,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt75_h6",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+# plot_SS2OM(OM3,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt75_h6",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt25_h7
@@ -307,13 +307,13 @@ OM4 <- SS2OM(SSdir,
 OM4 <- update_cpars(OM4)
 
 #####@> Looking to the OM...
-plot_SS2OM(OM4,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt25_h7",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+# plot_SS2OM(OM4,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt25_h7",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt50_h7
@@ -346,13 +346,13 @@ OM5 <- SS2OM(SSdir,
 OM5 <- update_cpars(OM5)
 
 #####@> Looking to the OM...
-plot_SS2OM(OM5,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt50_h7",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+# plot_SS2OM(OM5,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt50_h7",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt75_h7
@@ -385,13 +385,13 @@ OM6 <- SS2OM(SSdir,
 OM6 <- update_cpars(OM6)
 
 #####@> Looking to the OM...
-plot_SS2OM(OM6,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt75_h7",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+# plot_SS2OM(OM6,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt75_h7",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt25_h8
@@ -424,13 +424,13 @@ OM7 <- SS2OM(SSdir,
 OM7 <- update_cpars(OM7)
 
 #####@> Looking to the OM...
-plot_SS2OM(OM7,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt25_h8",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+# plot_SS2OM(OM7,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt25_h8",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt50_h8
@@ -463,13 +463,13 @@ OM8 <- SS2OM(SSdir,
 OM8 <- update_cpars(OM8)
 
 #####@> Looking to the OM...
-plot_SS2OM(OM8,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt50_h8",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+# plot_SS2OM(OM8,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt50_h8",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@>================================================================
 ######@> WSKJ_EstRec93_Qnt75_h8
@@ -502,13 +502,13 @@ OM9 <- SS2OM(SSdir,
 OM9 <- update_cpars(OM9)
 
 #####@> Looking to the OM...
-plot_SS2OM(OM9,
-           SSdir,
-           gender = 1,
-           filename = "WSKJ_EstRec93_Qnt75_h8",
-           dir = output.dir,
-           open_file = TRUE,
-           silent = FALSE)
+# plot_SS2OM(OM9,
+#            SSdir,
+#            gender = 1,
+#            filename = "WSKJ_EstRec93_Qnt75_h8",
+#            dir = output.dir,
+#            open_file = TRUE,
+#            silent = FALSE)
 
 ######@> Listing OMs...
 OMs <- list()
