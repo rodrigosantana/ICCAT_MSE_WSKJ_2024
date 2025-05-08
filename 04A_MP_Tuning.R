@@ -107,11 +107,11 @@ for (mp in CE_MPs) {
 }
 
 # ----- IS MPs ---------
-IS_MPs <- c('IS_01', 'IS_02', 'IS_03')
-
-for (mp in IS_MPs) {
-  DoMPTune(HistList, mp)
-}
+# IS_MPs <- c('IS_01', 'IS_02', 'IS_03')
+# 
+# for (mp in IS_MPs) {
+#   DoMPTune(HistList, mp)
+# }
 
 # ----- SP MPs ---------
 SP_MPs <- c('SP_01', 'SP_02', 'SP_03', 'SP_04')

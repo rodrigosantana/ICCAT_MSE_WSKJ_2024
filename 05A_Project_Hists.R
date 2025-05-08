@@ -55,12 +55,19 @@ if (!dir.exists(MSEDir))
 tunedMPs <- list.files(MngOption, full.names = TRUE, recursive = )
 MPnames <- gsub('.mp', '', basename(tunedMPs))
 
-for (i in seq_along(tunedMPs)) {
-  mp <- readRDS(tunedMPs[i])
-  assign(MPnames[i], mp, envir=.GlobalEnv)
+
+ProjectMPs <- MPnames # MPs to project
+
+
+ProjectMPs <- ProjectMPs[grepl("1_30", ProjectMPs)] # MPs tuned to 1-30
+
+for (i in seq_along(ProjectMPs)) {
+  ind <- match(ProjectMPs[i], MPnames)
+  mp <- readRDS(tunedMPs[ind])
+  assign(ProjectMPs[i], mp, envir=.GlobalEnv)
 }
 
-ProjectMPs <- MPnames # MPs to project 
+
 #### Loop Over MPs and then over OMs 
 for (mp in ProjectMPs) {
   message('\nProjecting MP: ', mp)
