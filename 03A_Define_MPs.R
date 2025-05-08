@@ -376,165 +376,170 @@ class(CE_03) <- "MP"
 
 # ------ Index Slope MPS -----
 
-#####@> Islope1 MP with asymetrical TAC correction...
-IS_01 <- function(x, Data, Data_Lag = 1, Interval = 3,
-                  Initial_MP_Yr = 2026, reps =  1, lambda = 0.4,
-                  tunepar = 0.9, mc = c(0.25, 0.2), yrsmth = 5, ...) {
-  Rec <- new("Rec")
-  
-  # Check if TAC needs to be updated
-  if (SameTAC(Initial_MP_Yr, Interval, Data)) {
-    Rec@TAC <- Data@MPrec[x]
-    Rec <- FixedTAC(Rec, Data) # use actual catches if they are available
-    return(Rec)
-  }
-  
-  # Lag Data
-  Data <- Lag_Data(Data, Data_Lag)
-  Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
-  
-  ## Smooth combined index
-  # index <- smoothed_index <- Data@Ind[x,]
-  # smoothed <- stats::smooth(index[!is.na(index)])
-  # smoothed_index[!is.na(smoothed_index)] <- smoothed
-  # Data@Ind[x,] <- smoothed_index
-  
-  ## Applied Islope1 MP to lagged data
-  ind <- (length(Data@Year) - (yrsmth - 1)):length(Data@Year)
-  Years <- Data@Year[ind]
-  ylast <- (Data@LHYear[1] - Data@Year[1]) + 1
-  C_dat <- Data@Cat[x, ind]
-  if (is.na(Data@MPrec[x]) || length(Data@Year) == ylast + 1) {
-    TACstar <- (1 - xx) *
-      MSEtool::trlnorm(reps, mean(C_dat, na.rm = TRUE),
-                       Data@CV_Cat/(yrsmth^0.5))
-  } else {
-    TACstar <- rep(Data@MPrec[x], reps)
-  }
-  I_hist <- Data@Ind[x, ind] 
-  yind <- 1:yrsmth
-  
-  slppar <- summary(lm(log(I_hist) ~ yind))$coefficients[2, 1:2]
-  if (reps > 1) {
-    Islp <- rnorm(reps, slppar[1], slppar[2])
-  } else {
-    Islp <- slppar[1]
-  }
-  TAC <- TACstar * (1 + tunepar * Islp) 
-  ## Return TAC...
-  ## Rec@TAC <- TAC
-  Rec@TAC <- adjust_TAC(TAC, Data@MPrec[x], mc)
-  return(Rec)
-  
-}
-class(IS_01) <- "MP"
+# Not good performance - leaving out
 
-#####@> Islope1 MP with symetrical TAC correction...
-IS_02 <- function(x, Data, Data_Lag = 1, Interval = 3,
-                  Initial_MP_Yr = 2026, reps =  1, lambda = 0.4,
-                  tunepar = 0.9, mc = c(0.2, 0.2), yrsmth = 5, ...) {
-  Rec <- new("Rec")
-  
-  # Check if TAC needs to be updated
-  if (SameTAC(Initial_MP_Yr, Interval, Data)) {
-    Rec@TAC <- Data@MPrec[x]
-    Rec <- FixedTAC(Rec, Data) # use actual catches if they are available
-    return(Rec)
-  }
-  
-  # Lag Data
-  Data <- Lag_Data(Data, Data_Lag)
-  Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
-  
-  ## Smooth combined index
-  # index <- smoothed_index <- Data@Ind[x,]
-  # smoothed <- stats::smooth(index[!is.na(index)])
-  # smoothed_index[!is.na(smoothed_index)] <- smoothed
-  # Data@Ind[x,] <- smoothed_index
-  
-  ## Applied Islope1 MP to lagged data
-  ind <- (length(Data@Year) - (yrsmth - 1)):length(Data@Year)
-  Years <- Data@Year[ind]
-  ylast <- (Data@LHYear[1] - Data@Year[1]) + 1
-  C_dat <- Data@Cat[x, ind]
-  if (is.na(Data@MPrec[x]) || length(Data@Year) == ylast + 1) {
-    TACstar <- (1 - xx) *
-      MSEtool::trlnorm(reps, mean(C_dat, na.rm = TRUE),
-                       Data@CV_Cat/(yrsmth^0.5))
-  } else {
-    TACstar <- rep(Data@MPrec[x], reps)
-  }
-  I_hist <- Data@Ind[x, ind] 
-  yind <- 1:yrsmth
-  slppar <- summary(lm(log(I_hist) ~ yind))$coefficients[2, 1:2]
-  if (reps > 1) {
-    Islp <- rnorm(reps, slppar[1], slppar[2])
-  } else {
-    Islp <- slppar[1]
-  }
-  TAC <- TACstar * (1 + tunepar * Islp) 
-  ## Return TAC...
-  ## Rec@TAC <- TAC
-  Rec@TAC <- adjust_TAC(TAC, Data@MPrec[x], mc)
-  return(Rec)
-  
-}
-class(IS_02) <- "MP"
-
-#####@> Islope1 MP without TAC correction...
-IS_03 <- function(x, Data, Data_Lag = 1, Interval = 3,
-                  Initial_MP_Yr = 2026, reps =  1, lambda = 0.4,
-                  tunepar = 0.9, mc = NA, yrsmth = 5, ...) {
-  Rec <- new("Rec")
-  
-  # Check if TAC needs to be updated
-  if (SameTAC(Initial_MP_Yr, Interval, Data)) {
-    Rec@TAC <- Data@MPrec[x]
-    Rec <- FixedTAC(Rec, Data) # use actual catches if they are available
-    return(Rec)
-  }
-  
-  # Lag Data
-  Data <- Lag_Data(Data, Data_Lag)
-  Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
-  
-  ## Smooth combined index
-  # index <- smoothed_index <- Data@Ind[x,]
-  # smoothed <- stats::smooth(index[!is.na(index)])
-  # smoothed_index[!is.na(smoothed_index)] <- smoothed
-  # Data@Ind[x,] <- smoothed_index
-  
-  ## Applied Islope1 MP to lagged data
-  ind <- (length(Data@Year) - (yrsmth - 1)):length(Data@Year)
-  Years <- Data@Year[ind]
-  ylast <- (Data@LHYear[1] - Data@Year[1]) + 1
-  C_dat <- Data@Cat[x, ind]
-  if (is.na(Data@MPrec[x]) || length(Data@Year) == ylast + 1) {
-    TACstar <- (1 - xx) *
-      MSEtool::trlnorm(reps, mean(C_dat, na.rm = TRUE),
-                       Data@CV_Cat/(yrsmth^0.5))
-  } else {
-    TACstar <- rep(Data@MPrec[x], reps)
-  }
-  I_hist <- Data@Ind[x, ind] 
-  yind <- 1:yrsmth
-  slppar <- summary(lm(log(I_hist) ~ yind))$coefficients[2, 1:2]
-  if (reps > 1) {
-    Islp <- rnorm(reps, slppar[1], slppar[2])
-  } else {
-    Islp <- slppar[1]
-  }
-  TAC <- TACstar * (1 +  tunepar * Islp)
-  ## Return TAC...
-  ## Rec@TAC <- TAC
-  Rec@TAC <- adjust_TAC(TAC, Data@MPrec[x], mc)
-  return(Rec)
-}
-class(IS_03) <- "MP"
-
-
-
-
+# 
+# #####@> Islope1 MP with asymetrical TAC correction...
+# IS_01 <- function(x, Data, Data_Lag = 1, Interval = 3,
+#                   Initial_MP_Yr = 2026, reps =  1, lambda = 0.4,
+#                   tunepar = 0.9, mc = c(0.25, 0.2), yrsmth = 5, ...) {
+#   Rec <- new("Rec")
+#   
+#   # Check if TAC needs to be updated
+#   if (SameTAC(Initial_MP_Yr, Interval, Data)) {
+#     Rec@TAC <- Data@MPrec[x]
+#     Rec <- FixedTAC(Rec, Data) # use actual catches if they are available
+#     return(Rec)
+#   }
+#   
+#   # Lag Data
+#   Data <- Lag_Data(Data, Data_Lag)
+#   Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
+#   
+#   ## Smooth combined index
+#   # index <- smoothed_index <- Data@Ind[x,]
+#   # smoothed <- stats::smooth(index[!is.na(index)])
+#   # smoothed_index[!is.na(smoothed_index)] <- smoothed
+#   # Data@Ind[x,] <- smoothed_index
+#   
+#   ## Applied Islope1 MP to lagged data
+#   ind <- (length(Data@Year) - (yrsmth - 1)):length(Data@Year)
+#   Years <- Data@Year[ind]
+#   ylast <- (Data@LHYear[1] - Data@Year[1]) + 1
+#   C_dat <- Data@Cat[x, ind]
+#   if (is.na(Data@MPrec[x]) || length(Data@Year) == ylast + 1) {
+#     TACstar <- (1 - xx) *
+#       MSEtool::trlnorm(reps, mean(C_dat, na.rm = TRUE),
+#                        Data@CV_Cat/(yrsmth^0.5))
+#   } else {
+#     TACstar <- rep(Data@MPrec[x], reps)
+#   }
+#   I_hist <- Data@Ind[x, ind] 
+#   yind <- 1:yrsmth
+#   
+#   slppar <- summary(lm(log(I_hist) ~ yind))$coefficients[2, 1:2]
+#   if (reps > 1) {
+#     Islp <- rnorm(reps, slppar[1], slppar[2])
+#   } else {
+#     Islp <- slppar[1]
+#   }
+#   TAC <- TACstar * (1 + tunepar * Islp) 
+#   ## Return TAC...
+#   ## Rec@TAC <- TAC
+#   Rec@TAC <- adjust_TAC(TAC, Data@MPrec[x], mc)
+#   return(Rec)
+#   
+# }
+# class(IS_01) <- "MP"
+# 
+# #####@> Islope1 MP with symetrical TAC correction...
+# IS_02 <- function(x, Data, Data_Lag = 1, Interval = 3,
+#                   Initial_MP_Yr = 2026, reps =  1, lambda = 0.4,
+#                   tunepar = 0.9, mc = c(0.2, 0.2), yrsmth = 5, ...) {
+#   Rec <- new("Rec")
+#   
+#   # Check if TAC needs to be updated
+#   if (SameTAC(Initial_MP_Yr, Interval, Data)) {
+#     Rec@TAC <- Data@MPrec[x]
+#     Rec <- FixedTAC(Rec, Data) # use actual catches if they are available
+#     return(Rec)
+#   }
+#   
+#   # Lag Data
+#   Data <- Lag_Data(Data, Data_Lag)
+#   Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
+#   
+#   ## Smooth combined index
+#   # index <- smoothed_index <- Data@Ind[x,]
+#   # smoothed <- stats::smooth(index[!is.na(index)])
+#   # smoothed_index[!is.na(smoothed_index)] <- smoothed
+#   # Data@Ind[x,] <- smoothed_index
+#   
+#   ## Applied Islope1 MP to lagged data
+#   ind <- (length(Data@Year) - (yrsmth - 1)):length(Data@Year)
+#   Years <- Data@Year[ind]
+#   ylast <- (Data@LHYear[1] - Data@Year[1]) + 1
+#   C_dat <- Data@Cat[x, ind]
+#   if (is.na(Data@MPrec[x]) || length(Data@Year) == ylast + 1) {
+#     TACstar <- (1 - xx) *
+#       MSEtool::trlnorm(reps, mean(C_dat, na.rm = TRUE),
+#                        Data@CV_Cat/(yrsmth^0.5))
+#   } else {
+#     TACstar <- rep(Data@MPrec[x], reps)
+#   }
+#   I_hist <- Data@Ind[x, ind] 
+#   yind <- 1:yrsmth
+#   slppar <- summary(lm(log(I_hist) ~ yind))$coefficients[2, 1:2]
+#   if (reps > 1) {
+#     Islp <- rnorm(reps, slppar[1], slppar[2])
+#   } else {
+#     Islp <- slppar[1]
+#   }
+#   TAC <- TACstar * (1 + tunepar * Islp) 
+#   ## Return TAC...
+#   ## Rec@TAC <- TAC
+#   Rec@TAC <- adjust_TAC(TAC, Data@MPrec[x], mc)
+#   return(Rec)
+#   
+# }
+# class(IS_02) <- "MP"
+# 
+# #####@> Islope1 MP without TAC correction...
+# IS_03 <- function(x, Data, Data_Lag = 1, Interval = 3,
+#                   Initial_MP_Yr = 2026, reps =  1, lambda = 0.4,
+#                   tunepar = 0.9, mc = NA, yrsmth = 5, ...) {
+#   Rec <- new("Rec")
+#   
+#   # Check if TAC needs to be updated
+#   if (SameTAC(Initial_MP_Yr, Interval, Data)) {
+#     Rec@TAC <- Data@MPrec[x]
+#     Rec <- FixedTAC(Rec, Data) # use actual catches if they are available
+#     return(Rec)
+#   }
+#   
+#   # Lag Data
+#   Data <- Lag_Data(Data, Data_Lag)
+#   Data@Year <- Data@Year[1:(length(Data@Year)-Data_Lag)]
+#   
+#   ## Smooth combined index
+#   # index <- smoothed_index <- Data@Ind[x,]
+#   # smoothed <- stats::smooth(index[!is.na(index)])
+#   # smoothed_index[!is.na(smoothed_index)] <- smoothed
+#   # Data@Ind[x,] <- smoothed_index
+#   
+#   ## Applied Islope1 MP to lagged data
+#   ind <- (length(Data@Year) - (yrsmth - 1)):length(Data@Year)
+#   Years <- Data@Year[ind]
+#   ylast <- (Data@LHYear[1] - Data@Year[1]) + 1
+#   C_dat <- Data@Cat[x, ind]
+#   if (is.na(Data@MPrec[x]) || length(Data@Year) == ylast + 1) {
+#     TACstar <- (1 - xx) *
+#       MSEtool::trlnorm(reps, mean(C_dat, na.rm = TRUE),
+#                        Data@CV_Cat/(yrsmth^0.5))
+#   } else {
+#     TACstar <- rep(Data@MPrec[x], reps)
+#   }
+#   I_hist <- Data@Ind[x, ind] 
+#   yind <- 1:yrsmth
+#   slppar <- summary(lm(log(I_hist) ~ yind))$coefficients[2, 1:2]
+#   
+#   
+#   mod <- lm(log(I_hist) ~ yind)
+#   plot(yind, log(I_hist), type='b')
+#   lines(yind, predict(mod), col='green')
+#        
+#   if (reps > 1) {
+#     Islp <- rnorm(reps, slppar[1], slppar[2])
+#   } else {
+#     Islp <- slppar[1]
+#   }
+#   TAC <- TACstar * (1 +  tunepar * Islp)
+#   ## Return TAC...
+#   ## Rec@TAC <- TAC
+#   Rec@TAC <- adjust_TAC(TAC, Data@MPrec[x], mc)
+#   return(Rec)
+# }
+# class(IS_03) <- "MP"
 
 
 # ----- SP Models ----
