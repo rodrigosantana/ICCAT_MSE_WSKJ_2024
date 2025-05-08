@@ -45,7 +45,7 @@ optPGK60_1_30 <- function(MSE_list) {
 # Custom Tuning Function
 DoMPTune <- function(HistList,
                      MPName,
-                     TuneInterval=c(0.1, 2),
+                     TuneInterval=c(0.05, 4),
                      TuneFunction=optPGK60_1_30,
                      Data_Lag=1,
                      ManagementInterval=3,
