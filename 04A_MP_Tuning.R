@@ -104,10 +104,10 @@ for (mp in CE_MPs) {
 }
 
 # ----- IR MPs ---------
-IR_MPs <- c("IR_01", "IR_02")
+IR_MPs <- c("IR1", "IR2", 'IR3')
 
 for (mp in IR_MPs) {
-  DoMPTune(HistList, mp)
+  DoMPTune(HistList, mp, c(0.6, 1.5))
 }
 
 
