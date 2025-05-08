@@ -412,7 +412,7 @@ IS_01 <- function(x, Data, Data_Lag = 1, Interval = 3,
   } else {
     TACstar <- rep(Data@MPrec[x], reps)
   }
-  I_hist <- Data@Ind[x, ind] * tunepar
+  I_hist <- Data@Ind[x, ind] 
   yind <- 1:yrsmth
   slppar <- summary(lm(log(I_hist) ~ yind))$coefficients[2, 1:2]
   if (reps > 1) {
@@ -420,7 +420,7 @@ IS_01 <- function(x, Data, Data_Lag = 1, Interval = 3,
   } else {
     Islp <- slppar[1]
   }
-  TAC <- TACstar * (1 + lambda * Islp) 
+  TAC <- TACstar * (1 + tunepar * Islp) 
   ## Return TAC...
   ## Rec@TAC <- TAC
   Rec@TAC <- adjust_TAC(TAC, Data@MPrec[x], mc)
@@ -464,7 +464,7 @@ IS_02 <- function(x, Data, Data_Lag = 1, Interval = 3,
   } else {
     TACstar <- rep(Data@MPrec[x], reps)
   }
-  I_hist <- Data@Ind[x, ind] * tunepar
+  I_hist <- Data@Ind[x, ind] 
   yind <- 1:yrsmth
   slppar <- summary(lm(log(I_hist) ~ yind))$coefficients[2, 1:2]
   if (reps > 1) {
@@ -472,7 +472,7 @@ IS_02 <- function(x, Data, Data_Lag = 1, Interval = 3,
   } else {
     Islp <- slppar[1]
   }
-  TAC <- TACstar * (1 + lambda * Islp) 
+  TAC <- TACstar * (1 + tunepar * Islp) 
   ## Return TAC...
   ## Rec@TAC <- TAC
   Rec@TAC <- adjust_TAC(TAC, Data@MPrec[x], mc)
@@ -516,7 +516,7 @@ IS_03 <- function(x, Data, Data_Lag = 1, Interval = 3,
   } else {
     TACstar <- rep(Data@MPrec[x], reps)
   }
-  I_hist <- Data@Ind[x, ind]  * tunepar
+  I_hist <- Data@Ind[x, ind] 
   yind <- 1:yrsmth
   slppar <- summary(lm(log(I_hist) ~ yind))$coefficients[2, 1:2]
   if (reps > 1) {
@@ -524,7 +524,7 @@ IS_03 <- function(x, Data, Data_Lag = 1, Interval = 3,
   } else {
     Islp <- slppar[1]
   }
-  TAC <- TACstar * (1 + lambda * Islp)
+  TAC <- TACstar * (1 +  tunepar * Islp)
   ## Return TAC...
   ## Rec@TAC <- TAC
   Rec@TAC <- adjust_TAC(TAC, Data@MPrec[x], mc)
