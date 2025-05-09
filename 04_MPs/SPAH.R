@@ -1,5 +1,5 @@
 source('03AA_MP_Internal_Functions.R')
-HistList <- readRDS("03_Hists/HistList.rda")
+
 
 SurplusProductionStockStatus <- function(x, Data,
                                  Data_Lag = 1, 
@@ -118,7 +118,15 @@ formals(SPA_NoHCR_nomc)$useHCR <- FALSE
 formals(SPA_NoHCR_nomc)$mc <- NA
 class(SPA_NoHCR_nomc) <- 'MP'
 
-i <- 7
+
+
+
+HistList <- readRDS("03_Hists/HistList.rda")
+
+
+
+
+i <- 5
 MSE <- Project(HistList[[i]], MPs=c('SPA_Base', 
                                     'SPA_Base_nomc', 
                                     'SPA_NoHCR',
