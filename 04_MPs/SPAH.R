@@ -6,10 +6,10 @@ SurplusProductionStockStatus <- function(x, Data,
                                  Interval = 3,
                                  Initial_MP_Yr = 2026, 
                                  reps =  1, 
-                                 tunepar = 1,
+                                 tunepar = .7,
                                  mc = c(0.25, 0.25),
                                  useHCR=TRUE,
-                                 BMSYTarg=1.3,
+                                 BMSYTarg=1.4,
                                  BMSYLim=0.5,
                                  delta1=1,
                                  delta2=0.5,
@@ -55,18 +55,14 @@ SurplusProductionStockStatus <- function(x, Data,
   # ##############################################################################
   
   # delta <- 1+((EstSS - BMSYTarg)/n* tunepar)
-  delta <- 1+(EstSS - BMSYTarg) * tunepar
-
-  # yind <- seq_along(EstSS)
-  # summary(lm(EstSS~yind))$coefficients[2, 1:2]
+  # delta <- 1+(EstSS - BMSYTarg) * tunepar
   
   prevER <- tail(Data@Cat[x,],1)/tail(EstB_BMSY,2)[1] 
  
   Bratio <- EstSS/BMSYTarg
+  delta <- Bratio
   if (useHCR) {
-    if (Bratio>=1) {
-      delta <- delta
-    } else if (EstSS>=BMSYLim) {
+    if (EstSS>=BMSYLim & EstSS<BMSYTarg) {
       a <- (delta1-delta2)/(BMSYTarg-BMSYLim)
       b <- delta2 -a*BMSYLim
       delta <- a*Bratio+b
@@ -77,7 +73,7 @@ SurplusProductionStockStatus <- function(x, Data,
     }
   }
   
-  newER <- prevER * delta
+  newER <- prevER * delta * tunepar
   TAC <- newER*tail(EstB_BMSY,1)[1]
   
   ## Maximum allowed change in TAC
@@ -94,92 +90,42 @@ SurplusProductionStockStatus <- function(x, Data,
 }
 
 
-# mc
-# useHCR
+# mc - performs better without but may exceed 25%
+# useHCR - performs better with
 # BMSYTarg
 # BMSYLim
 # delta1
 # delta2 
 
-
 SPA_Base <- SurplusProductionStockStatus
 class(SPA_Base) <- 'MP'
 
-SPA_Base_nomc <- SurplusProductionStockStatus
-formals(SPA_Base_nomc)$mc <- NA
-class(SPA_Base_nomc) <- 'MP'
+# 
+# 
+# HistList <- readRDS("03_Hists/HistList.rda")
+# 
+# 
+# 
+# 
+# i <- 5
+# MSE <- Project(HistList[[i]], MPs=c('SPA_Base', 
+#                                     'SPA_Base_nomc', 
+#                                     'SPA_TargHigh',
+#                                     'SPA_TargLow',
+#                                     'SPA_TargLimHigh',
+#                                     'SPA_TargLimLow'
+#                                     ))
+# Pplot(MSE)
+# 
+# SPA_LowTune <- SurplusProductionStockStatus
+# formals(SPA_LowTune)$tunepar <- 0.2
+# class(SPA_LowTune) <- 'MP'
+# 
+# MSE <- Project(HistList[[i]], MPs=c('SPA_Base', 
+#                                     'SPA_LowTune')
+# )
+# Pplot(MSE)
+# 
+# 
+# 
 
-SPA_NoHCR <- SurplusProductionStockStatus
-formals(SPA_NoHCR)$useHCR <- FALSE
-class(SPA_NoHCR) <- 'MP'
-
-SPA_NoHCR_nomc <- SurplusProductionStockStatus
-formals(SPA_NoHCR_nomc)$useHCR <- FALSE
-formals(SPA_NoHCR_nomc)$mc <- NA
-class(SPA_NoHCR_nomc) <- 'MP'
-
-
-
-
-HistList <- readRDS("03_Hists/HistList.rda")
-
-
-
-
-i <- 5
-MSE <- Project(HistList[[i]], MPs=c('SPA_Base', 
-                                    'SPA_Base_nomc', 
-                                    'SPA_NoHCR',
-                                    'SPA_NoHCR_nomc'
-                                    )
-               )
-Pplot(MSE)
-
-
-
-
-
-
-SPAH1 <- SurplusProductionStockStatus
-class(SPAH1) <- 'MP'
-
-SPAH2 <- SurplusProductionStockStatus
-formals(SPAH2)$BMSYLim <- 1
-class(SPAH2) <- 'MP'
-
-SPAH3 <- SurplusProductionStockStatus
-formals(SPAH3)$BMSYLim <- 0.8
-class(SPAH3) <- 'MP'
-
-
-# Test different configurations of function arguments
-
-
-selOMs <- c(1,5,9)
-
-MSEList <- list()
-for (i in selOMs) {
-  MSEList[[i]] <- Project(HistList[[i]], MPs=c('SPAH1', 'SPAH2', 'SPAH3'))
-  Pplot(MSEList[[i]])
-}
-
-
-
-
-pyears <- 2025:2054 
-cbind(1:30, pyears)
-
-pyears[15]
-
-seq(2026, by = 3, length.out = 30)
-
-
-Pplot(MSE1)
-Pplot(MSE5)
-Pplot(MSE9)
-
-MSE5@SB_SBMSY[,1,15] |> which.min()
-x <- 56
-mm <- 1
-om <- 5
-Data <- SWOMSE::Trim_Data(MSE5@PPD[[mm]], 2034)
