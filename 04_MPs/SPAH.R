@@ -1,5 +1,5 @@
 source('03AA_MP_Internal_Functions.R')
-
+HistList <- readRDS("03_Hists/HistList.rda")
 
 SurplusProductionStockStatus <- function(x, Data,
                                  Data_Lag = 1, 
@@ -73,7 +73,7 @@ SurplusProductionStockStatus <- function(x, Data,
       # Bratio <- seq(BMSYLim, BMSYTarg, by=0.1)
       # plot(Bratio, a*Bratio+b, type='l', ylim=c(0,1))
     } else {
-      delta <- deltaMin
+      delta <- delta2
     }
   }
   
@@ -85,10 +85,51 @@ SurplusProductionStockStatus <- function(x, Data,
   if (Bratio>=1) {
     TAC <- adjust_TAC(TAC, Data@MPrec[x], mc)
   }
+  if(!useHCR) {
+    TAC <- adjust_TAC(TAC, Data@MPrec[x], mc)
+  }
   
   Rec@TAC <- TAC
   Rec
 }
+
+
+# mc
+# useHCR
+# BMSYTarg
+# BMSYLim
+# delta1
+# delta2 
+
+
+SPA_Base <- SurplusProductionStockStatus
+class(SPA_Base) <- 'MP'
+
+SPA_Base_nomc <- SurplusProductionStockStatus
+formals(SPA_Base_nomc)$mc <- NA
+class(SPA_Base_nomc) <- 'MP'
+
+SPA_NoHCR <- SurplusProductionStockStatus
+formals(SPA_NoHCR)$useHCR <- FALSE
+class(SPA_NoHCR) <- 'MP'
+
+SPA_NoHCR_nomc <- SurplusProductionStockStatus
+formals(SPA_NoHCR_nomc)$useHCR <- FALSE
+formals(SPA_NoHCR_nomc)$mc <- NA
+class(SPA_NoHCR_nomc) <- 'MP'
+
+i <- 7
+MSE <- Project(HistList[[i]], MPs=c('SPA_Base', 
+                                    'SPA_Base_nomc', 
+                                    'SPA_NoHCR',
+                                    'SPA_NoHCR_nomc'
+                                    )
+               )
+Pplot(MSE)
+
+
+
+
 
 
 SPAH1 <- SurplusProductionStockStatus
@@ -104,7 +145,7 @@ class(SPAH3) <- 'MP'
 
 
 # Test different configurations of function arguments
-HistList <- readRDS("03_Hists/HistList.rda")
+
 
 selOMs <- c(1,5,9)
 
