@@ -7,10 +7,10 @@ SurplusProductionStockStatus <- function(x, Data,
                                  Initial_MP_Yr = 2026, 
                                  reps =  1, 
                                  tunepar = .7,
-                                 mc = c(0.25, 0.25),
+                                 mc = c(0.3, 0.3),
                                  useHCR=TRUE,
-                                 BMSYTarg=1.4,
-                                 BMSYLim=0.5,
+                                 BMSYTarg=1.3,
+                                 BMSYLim=0.6,
                                  delta1=1,
                                  delta2=0.5,
                                  ...) {
@@ -68,7 +68,7 @@ SurplusProductionStockStatus <- function(x, Data,
       delta <- a*Bratio+b
       # Bratio <- seq(BMSYLim, BMSYTarg, by=0.1)
       # plot(Bratio, a*Bratio+b, type='l', ylim=c(0,1))
-    } else {
+    } else if (EstSS<BMSYLim){
       delta <- delta2
     }
   }
@@ -100,8 +100,13 @@ SurplusProductionStockStatus <- function(x, Data,
 SPA_Base <- SurplusProductionStockStatus
 class(SPA_Base) <- 'MP'
 
-# 
-# 
+mse <- Project(HistList[[5]], 'SPA_Base')
+Pplot(mse)
+
+x=1
+Data <- SWOMSE::Trim_Data(mse@PPD[[1]], 2031)
+
+
 # HistList <- readRDS("03_Hists/HistList.rda")
 # 
 # 
