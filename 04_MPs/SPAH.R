@@ -68,7 +68,7 @@ SurplusProductionStockStatus <- function(x, Data,
       delta <- delta
     } else if (EstSS>=BMSYLim) {
       a <- (delta1-delta2)/(BMSYTarg-BMSYLim)
-      b <- deltaMin -a*BMSYLim
+      b <- delta2 -a*BMSYLim
       delta <- a*Bratio+b
       # Bratio <- seq(BMSYLim, BMSYTarg, by=0.1)
       # plot(Bratio, a*Bratio+b, type='l', ylim=c(0,1))
