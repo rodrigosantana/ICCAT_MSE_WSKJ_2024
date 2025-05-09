@@ -76,7 +76,7 @@ for (i in seq_along(ProjectMPs)) {
   assign(ProjectMPs[i], mp, envir=.GlobalEnv)
 }
 
-parallel <- TRUE
+parallel <- FALSE # getting errors
 
 if (parallel) {
   setup()

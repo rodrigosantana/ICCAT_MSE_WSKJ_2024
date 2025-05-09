@@ -63,10 +63,6 @@ DF <- do.call('rbind', MPList)
 
 CalcPGK(DF)
 
-DF |> dplyr::filter(Year==2025) |> 
-  dplyr::group_by(MP) |>
-  dplyr::summarise(mean(SB_SBMSY),
-                   min(SB_SBMSY))
 
 # ---- Time Series Plot -----
 plotVars <- c('F_FMSY', 'SB_SBMSY', 'TAC', 'Removals', 'Landings')
@@ -99,8 +95,7 @@ ggplot(DFplot, aes(x=Year)) +
 
 ## ---- SB/SBMSY By OM ----
 DFplotbyOM <- DF |>
-  tidyr::pivot_longer(c('Growth', 'Steepness'))  |> 
-  dplyr::group_by(Year, MP, name, value) |>
+  dplyr::group_by(Year, MP, Growth, Steepness) |>
   dplyr::summarise(Median=median(SB_SBMSY),
                    Lower1=quantile(SB_SBMSY, 0.025),
                    Upper1=quantile(SB_SBMSY, 0.975),
@@ -109,16 +104,17 @@ DFplotbyOM <- DF |>
 
 DFplotbyOM$MP <- gsub('1_30', '', DFplotbyOM$MP)
 
-ggplot(DFplotbyOM, aes(x=Year)) +
-  facet_grid(value~MP) +
+DFplotbyOM <- DFplotbyOM |> dplyr::filter(MP %in% c('CE_01', 'IR1'))
+ggplot(DFplotbyOM, aes(x=Year, color=MP)) +
+  facet_grid(Growth~Steepness) +
   geom_hline(yintercept = 1, linetype=2) +
   expand_limits(y=0) +
-  geom_ribbon(aes(ymin = Lower1,
-                  ymax = Upper1),
-              alpha = 0.5, fill = ribbonCols[1]) + 
-  geom_ribbon(aes(ymin = Lower2,
-                  ymax = Upper2),
-              alpha = 0.5, fill = ribbonCols[2]) +
+  # geom_ribbon(aes(ymin = Lower1,
+  #                 ymax = Upper1),
+  #             alpha = 0.5, fill = ribbonCols[1]) + 
+  # geom_ribbon(aes(ymin = Lower2,
+  #                 ymax = Upper2),
+  #             alpha = 0.5, fill = ribbonCols[2]) +
   geom_line(aes(y=Median)) +
   theme_bw()
 

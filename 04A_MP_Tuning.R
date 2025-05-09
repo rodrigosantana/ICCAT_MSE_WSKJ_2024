@@ -24,33 +24,33 @@ HistList <- readRDS("03_Hists/HistList.rda")
 
 
 # tuning optimization function
-optPGK60_4_10 <- function(MSE_list) {
-  PGKm <- sapply(MSE_list, function(X) {
-    # Years 4 - 10 - index 5:11 becuase first projection year is 2025 before MP is used
-    mean(X@SB_SBMSY[ , , 5:11] > 1 & X@F_FMSY[ , , 5:11] < 1)
-  })
-  PGKw <- mean(PGKm)
-
-  ssq <- (PGKw-0.6)^2
-  cat(paste0("*************************\n"))
-  cat(paste0("PGKw[4-10] = ", round(PGKw, 4), "\n"))
-  cat(paste0("SSQ = ", round(ssq, 5), "\n"))
-  cat(paste0("*************************\n"))
-  ssq
-}
+# optPGK60_4_10 <- function(MSE_list) {
+#   PGKm <- sapply(MSE_list, function(X) {
+#     # Years 4 - 10 - index 5:11 becuase first projection year is 2025 before MP is used
+#     mean(X@SB_SBMSY[ , , 5:11] > 1 & X@F_FMSY[ , , 5:11] < 1)
+#   })
+#   PGKw <- mean(PGKm)
+# 
+#   ssq <- (PGKw-0.6)^2
+#   cat(paste0("*************************\n"))
+#   cat(paste0("PGKw[4-10] = ", round(PGKw, 4), "\n"))
+#   cat(paste0("SSQ = ", round(ssq, 5), "\n"))
+#   cat(paste0("*************************\n"))
+#   ssq
+# }
 
 optPGK60_1_30 <- function(MSE_list) {
     PGKm <- sapply(MSE_list, function(X) {
         ## Years 1 - 30 - index 2:31 becuase first projection year is 2025 before MP is used
         mean(X@SB_SBMSY[ , , 2:30] > 1 & X@F_FMSY[ , , 2:30] < 1)
     })
-    PGKw <- mean(PGKm)
+    PGKw <- round(mean(PGKm),3)
 
     ssq <- (PGKw-0.6)^2
     cat(paste0("*************************\n"))
-    cat(paste0("PGKw[4-10] = ", round(PGKw, 4), "\n"))
+    cat(paste0("PGKw = ", PGKw, "\n"))
     cat(paste0("SSQ = ", round(ssq, 5), "\n"))
-    cat(paste0("*************************\n"))
+    cat(paste0("*************************\n\n\n"))
     ssq
 }
 
@@ -62,9 +62,11 @@ DoMPTune <- function(HistList,
                      Data_Lag=1,
                      ManagementInterval=3,
                      Initial_MP_Yr=2026,
-                     tol=1E-3,
+                     tol=1E-2,
                      parallel=FALSE) {
 
+  message('Tuning: ', MPName)
+  
   tuneMP <- get(MPName)
   formals(tuneMP)$Data_Lag <- Data_Lag
   formals(tuneMP)$Interval <- ManagementInterval
@@ -116,6 +118,7 @@ for (mp in CE_MPs) {
 
 # ----- IR MPs ---------
 IR_MPs <- c("IR1", "IR2", 'IR3')
+IR_MPs <- c( "IR2", 'IR3')
 
 
 
