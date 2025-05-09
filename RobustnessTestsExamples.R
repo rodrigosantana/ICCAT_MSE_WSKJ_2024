@@ -49,7 +49,7 @@ Hist <- HistList[[om]]
 OM <- Hist@OM
 
 # ----- Recruitment Deviations -----
-
+# OM@cpars$Perr_y
 RecDevs <- Hist@SampPars$Stock$Perr_y
 dim(RecDevs) # nsim, maxage + nyears+proyears
 c(OM@nsim, OM@maxage+OM@nyears+OM@proyears)
@@ -68,6 +68,10 @@ NewProjectionRecDevs <- matrix(NewProjectionRecDevs, OM@nsim, OM@proyears)
 par(mfrow=c(1,2))
 matplot(ProjYears, t(ProjectionRecDevs), type='l', ylab='', ylim=c(0,4))
 matplot(ProjYears, t(NewProjectionRecDevs), type='l', ylab='', ylim=c(0,4))
+
+# replace in Hist
+Hist@SampPars$Stock$Perr_y[,ProjInd] <- NewProjectionRecDevs
+# MSEnewRecDevs <- Project(Hist, ...)
 
 
 # ----- Growth -----
@@ -134,6 +138,6 @@ Hist@SampPars$Stock$Len_age[,,projind] <- newLengthAge
 Hist@SampPars$Stock$Wt_age[,,projind] <- newWeightAtAge
 Hist@SampPars$Fleet$Wt_age_C[,,projind] <- newFleetWeightAtAge
 
-
+# MSEnewGrowth <- Project(Hist, ...)
 
 
