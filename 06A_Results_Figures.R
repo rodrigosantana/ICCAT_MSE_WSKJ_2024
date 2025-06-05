@@ -104,7 +104,7 @@ DFplotbyOM <- DF |>
 
 DFplotbyOM$MP <- gsub('1_30', '', DFplotbyOM$MP)
 
-DFplotbyOM <- DFplotbyOM |> dplyr::filter(MP %in% c('CE_01', 'IR1'))
+DFplotbyOM <- DFplotbyOM |> dplyr::filter(MP %in% c("SPA_1", "SPA_2", "SPA_3" ,"SPA_4", "SPA_5"))
 ggplot(DFplotbyOM, aes(x=Year, color=MP)) +
   facet_grid(Growth~Steepness) +
   geom_hline(yintercept = 1, linetype=2) +
